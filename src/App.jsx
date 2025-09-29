@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Tag as TagIcon,
@@ -34,6 +34,7 @@ import {
   Info,
   ListChecks,
   ArrowRight,
+  X,
 } from "lucide-react";
 
 // --- MOCK DATA FOR LOCAL STATE ---
@@ -155,7 +156,7 @@ const NGO_REQUIREMENTS = [
   {
     name: "First Aid Supplies (Unopened)",
     quantity: "20 kits",
-    status: "Medium Priority",
+    status: "Medium Need",
   },
   {
     name: "Warm Winter Coats (Adult S/M/L)",
@@ -181,6 +182,7 @@ const FOOD_STORAGE_OPTIONS = ["Pantry", "Refrigerated", "Frozen", "Cool/Dry"];
 // Mock API Constants
 const MOCK_IMAGGA_KEY = "acc_1611ccc4a20d56a";
 const FUZZY_THRESHOLD = -2500;
+const API_KEY = ""; // Placeholder for Gemini API Key
 
 // ====================================================================
 // SECTION 1: UTILITY FUNCTIONS
@@ -371,35 +373,127 @@ const FoodCard = ({ food, onClick }) => {
 /**
  * Chatbot Component
  */
-const Chatbot = () => {
+const Chatbot = ({ inventory, foodItems, categories }) => {
+  // Pass inventory data
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       sender: "Bot",
-      text: "Hello! I am your Inventory Assistant. How can I help you search or manage your stock today?",
+      text: "Hello! I am your Inventory AI Assistant. Ask me anything about our stock, categories, or how to donate!",
+      isAnimated: true,
     },
   ]);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
-  const handleSend = () => {
+  const inventoryContext = useMemo(() => {
+    // Prepare a summary of the current inventory for the AI context
+    const allItems = [...inventory, ...foodItems];
+    if (allItems.length === 0) return "The inventory is currently empty.";
+
+    const summary = allItems
+      .slice(0, 5)
+      .map(
+        (item) =>
+          `Item: ${item.name}, Category: ${
+            item.category || item.type
+          }, Condition: ${item.condition || "N/A"}`
+      )
+      .join("; ");
+
+    return `Current total inventory count: ${
+      allItems.length
+    }. Sample items: ${summary}. Available categories: ${categories.join(
+      ", "
+    )}.`;
+  }, [inventory, foodItems, categories]);
+
+  const handleSend = async () => {
     if (input.trim() === "") return;
 
-    const newMessage = { sender: "User", text: input.trim() };
-    setMessages([...messages, newMessage]);
-    setInput("");
+    const userQuery = input.trim();
+    const newMessage = { sender: "User", text: userQuery };
 
-    // Mock Bot Response Logic
-    setTimeout(() => {
-      const botResponse = {
-        sender: "Bot",
-        text: `Thanks for asking about "${input.trim()}." I can look that up for you!`,
+    // 1. Update state immediately with user message and reset input
+    setMessages((prev) => [...prev, newMessage]);
+    setInput("");
+    setIsTyping(true);
+
+    // 2. Add 'Typing...' message placeholder
+    setMessages((prev) => [
+      ...prev,
+      { sender: "Bot", text: "Typing...", isTyping: true },
+    ]);
+
+    try {
+      const systemPrompt = `You are an Inventory AI Assistant for a donation platform. Your goal is to be helpful, concise, and professional. Use the following context about the inventory to answer user questions, especially regarding availability, categories, or donation process: ${inventoryContext}`;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+
+      const payload = {
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
       };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      const botText =
+        result.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Sorry, I encountered an error and cannot process your request right now.";
+
+      // 3. Update state, removing 'Typing...' and adding the final response
+      setMessages((prev) => {
+        const updatedMessages = prev.slice(0, -1); // Remove the 'Typing...' message
+        return [
+          ...updatedMessages,
+          { sender: "Bot", text: botText, isAnimated: true },
+        ];
+      });
+    } catch (error) {
+      console.error("Gemini API Error:", error);
+      // 3. Update state with error message
+      setMessages((prev) => {
+        const updatedMessages = prev.slice(0, -1); // Remove the 'Typing...' message
+        return [
+          ...updatedMessages,
+          {
+            sender: "Bot",
+            text: "Apologies, I could not connect to the AI service. Please try again later.",
+            isError: true,
+            isAnimated: true,
+          },
+        ];
+      });
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
+      {/* Inject CSS for the animation */}
+      <style>
+        {`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fadeInUp {
+                    animation: fadeInUp 0.3s ease-out;
+                }
+                `}
+      </style>
+
       {/* Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -414,9 +508,13 @@ const Chatbot = () => {
         <div className="absolute bottom-16 right-0 w-80 h-96 bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
           {/* Chat Header */}
           <div className="bg-gray-600 p-3 text-white font-bold flex justify-between items-center shadow-md">
-            Inventory Support Chat
-            <span className="text-xs bg-green-400 px-2 py-0.5 rounded-full font-medium">
-              Online
+            Inventory Support AI
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                isTyping ? "bg-red-400" : "bg-green-400"
+              }`}
+            >
+              {isTyping ? "Thinking..." : "Online"}
             </span>
           </div>
 
@@ -433,13 +531,40 @@ const Chatbot = () => {
                   className={`max-w-[75%] px-3 py-2 rounded-xl text-sm shadow-sm ${
                     msg.sender === "User"
                       ? "bg-gray-500 text-white rounded-br-none"
+                      : msg.isTyping
+                      ? "bg-yellow-100 text-gray-600 italic border border-yellow-300 rounded-tl-none"
+                      : msg.isError
+                      ? "bg-red-100 text-red-700 rounded-tl-none"
                       : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
-                  }`}
+                  } ${msg.isAnimated ? "animate-fadeInUp" : ""}`}
                 >
-                  {msg.text}
+                  {msg.isTyping ? (
+                    <div className="flex items-center space-x-1">
+                      <div
+                        className="h-2 w-2 bg-gray-600 rounded-full animate-bounce"
+                        style={{ animationDelay: "0s" }}
+                      ></div>
+                      <div
+                        className="h-2 w-2 bg-gray-600 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></div>
+                      <div
+                        className="h-2 w-2 bg-gray-600 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                    </div>
+                  ) : (
+                    msg.text
+                  )}
                 </div>
               </div>
             ))}
+            {/* Scroll to bottom placeholder */}
+            <div
+              ref={(el) => {
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+            />
           </div>
 
           {/* Chat Input */}
@@ -449,13 +574,25 @@ const Chatbot = () => {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Type your question..."
+                onKeyPress={(e) =>
+                  e.key === "Enter" && !isTyping && handleSend()
+                }
+                placeholder={
+                  isTyping
+                    ? "AI is thinking..."
+                    : "Ask about inventory or donation..."
+                }
                 className="flex-1 p-2 border border-gray-300 rounded-full focus:ring-gray-500 focus:border-gray-500 text-sm"
+                disabled={isTyping}
               />
               <button
                 onClick={handleSend}
-                className="ml-2 w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-full flex items-center justify-center transition duration-150"
+                disabled={isTyping}
+                className={`ml-2 w-8 h-8 rounded-full flex items-center justify-center transition duration-150 ${
+                  isTyping
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gray-500 hover:bg-gray-600 text-white"
+                }`}
                 title="Send"
               >
                 <Send size={16} />
@@ -672,6 +809,178 @@ const FoodItemDetailPage = ({ item, setCurrentPage }) => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- New Component for NGO Review ---
+
+/**
+ * Review Donation Page Component
+ * Displays item and donator details before final NGO acceptance.
+ */
+const ReviewDonationPage = ({ item, setCurrentPage }) => {
+  if (!item) {
+    setCurrentPage("ngoDonation");
+    return null;
+  }
+
+  const isFood = item.type && item.storageLocation;
+
+  const handleConfirmAcceptance = () => {
+    // Mock final acceptance logic
+    // NOTE: In a real app, this would update the item status in the database.
+    alert(
+      `NGO Confirmed Acceptance of: ${item.name} from ${item.donatorName}. (Action mocked)`
+    );
+    setCurrentPage("ngoDonation");
+  };
+
+  const ItemSpecificDetails = () => {
+    if (isFood) {
+      const expiryDate = item.expiryDate
+        ? new Date(item.expiryDate).toLocaleDateString()
+        : "N/A";
+      return (
+        <>
+          <h3 className="text-xl font-bold text-gray-700 border-b pb-2 mt-4 flex items-center">
+            <Utensils size={20} className="mr-2" /> Food Specifications
+          </h3>
+          <DetailRow label="Food Type" value={item.type} icon={TagIcon} />
+          <DetailRow
+            label="General Storage"
+            value={item.storageLocation}
+            icon={Warehouse}
+          />
+          <DetailRow
+            label="Specific Location"
+            value={item.specificLocation || "N/A"}
+            icon={MapPin}
+          />
+          <DetailRow label="Expiry Date" value={expiryDate} icon={Clock} />
+          <DetailRow
+            label="Quantity"
+            value={`${item.quantity} units`}
+            icon={Plus}
+          />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <h3 className="text-xl font-bold text-gray-700 border-b pb-2 mt-4 flex items-center">
+            <Wrench size={20} className="mr-2" /> Product Details
+          </h3>
+          <DetailRow label="Category" value={item.category} icon={TagIcon} />
+          <DetailRow
+            label="Condition"
+            value={item.condition}
+            icon={CheckCircle}
+          />
+          <DetailRow label="Notes" value={item.details || "N/A"} icon={Info} />
+        </>
+      );
+    }
+  };
+
+  const DetailRow = ({ label, value, icon: _Icon }) => (
+    <div className="flex items-start text-gray-700 mt-2">
+      <Icon size={16} className="mr-3 mt-1 text-gray-500 flex-shrink-0" />
+      <div className="flex-grow">
+        <span className="font-semibold block">{label}:</span>
+        <span className="text-gray-600">{value}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        <button
+          onClick={() => setCurrentPage("ngoDonation")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Donation Hub</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          Review Donation
+        </h1>
+      </header>
+
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-600 content-panel space-y-6">
+        <div className="flex justify-between items-start border-b pb-4">
+          <h2 className="text-4xl font-extrabold text-gray-800">{item.name}</h2>
+          <div
+            className={`w-16 h-16 flex items-center justify-center rounded-full ${
+              isFood ? "bg-green-500" : getCategoryColor(item.category)
+            } shadow-lg`}
+          >
+            {isFood ? (
+              <Utensils size={30} className="text-white" />
+            ) : (
+              getCategoryIcon(item.category)
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Column 1: Donator Details */}
+          <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
+            <h3 className="text-xl font-bold text-gray-700 border-b pb-2 flex items-center">
+              <User size={20} className="mr-2" /> Donator Details
+            </h3>
+            <DetailRow
+              label="Name"
+              value={item.donatorName || "N/A"}
+              icon={User}
+            />
+            <DetailRow
+              label="Location"
+              value={item.donatorLocation || "N/A"}
+              icon={Globe}
+            />
+            <DetailRow
+              label="Address"
+              value={item.donatorAddress || "N/A"}
+              icon={MapPin}
+            />
+            <p className="text-xs text-gray-500 pt-2">
+              Contact donator using provided details if needed.
+            </p>
+          </div>
+
+          {/* Column 2: Item Details */}
+          <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
+            <h3 className="text-xl font-bold text-gray-700 border-b pb-2 flex items-center">
+              <Info size={20} className="mr-2" /> General Description
+            </h3>
+            <p className="text-gray-600 italic">
+              "{item.description || "No short description provided."}"
+            </p>
+
+            {ItemSpecificDetails()}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="pt-6 border-t border-gray-200 flex justify-end space-x-4">
+          <button
+            onClick={() => setCurrentPage("ngoDonation")}
+            className="flex items-center py-3 px-6 rounded-lg shadow-md font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition duration-150"
+          >
+            <X size={20} className="mr-2" />
+            Cancel / Return to Hub
+          </button>
+          <button
+            onClick={handleConfirmAcceptance}
+            className="flex items-center py-3 px-6 rounded-lg shadow-md font-medium text-white bg-green-600 hover:bg-green-700 transition duration-150 transform hover:scale-[1.01]"
+          >
+            <CheckCircle size={20} className="mr-2" />
+            Confirm Acceptance
+          </button>
         </div>
       </div>
     </div>
@@ -1501,9 +1810,6 @@ const DonatorProfilePage = ({
   setLoggedIn,
   setCurrentUser,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(currentUser?.name || "");
-
   if (!currentUser) {
     setCurrentPage("home");
     return null;
@@ -1515,19 +1821,13 @@ const DonatorProfilePage = ({
     setCurrentPage("home");
   };
 
-  const handleSave = () => {
-    setCurrentUser({ ...currentUser, name: editedName });
-    setIsEditing(false);
-  };
-
   // Mock profile picture URL (using initials)
   const initials =
-    (isEditing ? editedName : currentUser.name)
+    currentUser.name
       ?.split(" ")
       .map((n) => n[0])
-      .join("")
-      .substring(0, 2)
-      .toUpperCase() || "AN"; // Safely handle null/undefined name
+      ?.join("")
+      ?.toUpperCase() || "AN"; // Safely handle null/undefined name
   const profilePicUrl = `https://placehold.co/150x150/4B5563/FFFFFF?text=${initials}`;
 
   // Helper for profile details based on user type
@@ -1537,7 +1837,7 @@ const DonatorProfilePage = ({
       : "Organization Name";
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 content-panel">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
         <button
           onClick={() => setCurrentPage("home")}
@@ -1551,7 +1851,7 @@ const DonatorProfilePage = ({
         </h1>
       </header>
 
-      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 space-y-8">
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center border-b border-gray-200 pb-6">
           <img
@@ -1559,18 +1859,9 @@ const DonatorProfilePage = ({
             alt="Profile Picture"
             className="w-36 h-36 rounded-full object-cover border-4 border-gray-300 shadow-xl"
           />
-          {isEditing ? (
-            <input
-              type="text"
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              className="text-4xl font-bold text-gray-800 mt-4 bg-gray-100 border-2 border-gray-300 rounded-lg text-center"
-            />
-          ) : (
-            <h2 className="text-4xl font-bold text-gray-800 mt-4">
-              {currentUser.name || "Anonymous Donator"}
-            </h2>
-          )}
+          <h2 className="text-4xl font-bold text-gray-800 mt-4">
+            {currentUser.name || "Anonymous Donator"}
+          </h2>
           <p className="text-gray-500">{currentUser.email || "N/A"}</p>
 
           {/* Mock Profile Picture Uploader */}
@@ -1648,23 +1939,13 @@ const DonatorProfilePage = ({
 
         {/* Action Buttons */}
         <div className="pt-6 border-t border-gray-200 flex justify-between">
-          {isEditing ? (
-            <button
-              onClick={handleSave}
-              className="flex items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 transition duration-150"
-            >
-              <CheckCircle size={18} className="mr-2" />
-              Save Changes
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
-            >
-              <Settings size={18} className="mr-2" />
-              Edit Profile
-            </button>
-          )}
+          <button
+            onClick={() => console.log("Simulating Edit Profile...")}
+            className="flex items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
+          >
+            <Settings size={18} className="mr-2" />
+            Edit Profile
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition duration-150"
@@ -1697,11 +1978,15 @@ const NgoDonationView = ({
     (a, b) => (b.timestamp || 0) - (a.timestamp || 0)
   );
 
-  // Handler for NGO accepting a pending donation (mock action)
-  const handleAcceptDonation = (itemId, itemName) => {
+  // Handler to initiate the review process
+  const handleReviewClick = (item) => {
+    setSelectedItem(item);
+    setCurrentPage("reviewDonation");
+  };
+
+  // Handler for NGO accepting a pending donation (mock action, now only called from ReviewPage)
+  const _handleAcceptDonation = (itemId, itemName) => {
     console.log(`NGO Accepted Donation: ${itemName} (ID: ${itemId})`);
-    // We use alert here temporarily since this is a mock action button.
-    // NOTE: In a real environment, alert() is blocked. Use a custom modal instead.
     alert(`Successfully reviewed and accepted the donation: ${itemName}`);
   };
 
@@ -1777,8 +2062,8 @@ const NgoDonationView = ({
           </h2>
 
           <p className="text-sm text-gray-600 mb-4">
-            Review items submitted by **Donators**. Click "Accept" to confirm
-            receipt or review details.
+            Review items submitted by **Donators**. Click "**Review**" to
+            confirm receipt.
           </p>
 
           {allAvailableItems.length === 0 ? (
@@ -1829,10 +2114,10 @@ const NgoDonationView = ({
                       View Details
                     </button>
                     <button
-                      onClick={() => handleAcceptDonation(item.id, item.name)}
+                      onClick={() => handleReviewClick(item)} // UPDATED to go to Review Page
                       className="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition duration-150 flex items-center"
                     >
-                      Accept <ArrowRight size={14} className="ml-1" />
+                      Review <ArrowRight size={14} className="ml-1" />
                     </button>
                   </div>
                 </div>
@@ -2205,6 +2490,7 @@ const AddItemPage = ({
           <h2 className="text-xl font-bold text-gray-700 pt-4 border-t border-gray-200">
             Item Details
           </h2>
+
           {/* Item Name */}
           <div>
             <label
@@ -2938,7 +3224,6 @@ const App = () => {
   } else if (currentPage === "selectLogin") {
     content = <SelectLoginPage setCurrentPage={setCurrentPage} />;
   } else if (currentPage === "donatorLogin") {
-    // UPDATED ROUTE
     content = (
       <DonatorLoginPage
         setCurrentPage={setCurrentPage}
@@ -2972,6 +3257,11 @@ const App = () => {
         foodItems={foodItems}
         setSelectedItem={setSelectedItem}
       />
+    );
+  } else if (currentPage === "reviewDonation" && selectedItem) {
+    // NEW ROUTE
+    content = (
+      <ReviewDonationPage item={selectedItem} setCurrentPage={setCurrentPage} />
     );
   } else if (currentPage === "add") {
     // General Item Add (Donator only)
@@ -3072,7 +3362,13 @@ const App = () => {
       </div>
 
       {/* Floating Chatbot at Bottom Right */}
-      {!showSplash && <Chatbot />}
+      {!showSplash && (
+        <Chatbot
+          inventory={inventory}
+          foodItems={foodItems}
+          categories={categories}
+        />
+      )}
     </>
   );
 };
