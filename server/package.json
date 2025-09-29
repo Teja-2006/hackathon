@@ -1,0 +1,22 @@
+{
+  "name": "donation-system-server",
+  "version": "1.0.0",
+  "description": "Donation system API server with ngrok integration and analytics dashboard",
+  "main": "server-analytics.js",
+  "scripts": {
+    "start": "node server-analytics.js",
+    "dev": "nodemon server-analytics.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "ngrok": "^5.0.0-beta.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
