@@ -1,16 +1,43 @@
-# React + Vite
+# Donation & Inventory Management Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a full-stack web application designed to streamline the process of donating and managing inventory for non-profit organizations (NGOs). It provides a user-friendly interface for individual donators to submit items and a dedicated hub for NGOs to review, accept, and manage incoming donations.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+-   **Dual User Roles:** Separate login and functionality for **Individual Donators** and **NGOs**.
+-   **Comprehensive Inventory System:**
+    -   Categorizes donations into general goods (Electronics, Clothing, etc.) and food items.
+    -   Dynamic search and filtering by category and keywords.
+    -   Visually distinct cards for different item types.
+-   **Donation Submission:**
+    -   Easy-to-use forms for submitting both general products and food items.
+    -   Mock image upload with "verification" to ensure quality.
+    -   **Fuzzy Duplicate Detection:** Alerts users if they are submitting an item that is very similar to an existing one in the inventory.
+-   **NGO Donation Hub:**
+    -   A centralized dashboard for NGOs to view all pending donations.
+    -   A "Critical Requirements" section to broadcast urgent needs to donators.
+    -   A detailed review page to inspect donator and item information before accepting a donation.
+-   **User Profiles:**
+    -   Authenticated users have a profile page displaying their details.
+    -   Functionality to edit user information.
+-   **AI-Powered Chatbot:**
+    -   An integrated AI assistant (powered by Google's Gemini) to answer questions about the inventory, categories, and donation process.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+-   **Frontend:**
+    -   **React:** A JavaScript library for building user interfaces.
+    -   **Vite:** A fast build tool and development server for modern web projects.
+    -   **Tailwind CSS:** A utility-first CSS framework for rapid UI development (used via CDN).
+    -   **Lucide React:** A library of simply beautiful and consistent icons.
+-   **Backend:**
+    -   **Node.js:** A JavaScript runtime for building server-side applications.
+    -   **Express.js:** A minimal and flexible Node.js web application framework.
+    -   **CORS:** Middleware for enabling Cross-Origin Resource Sharing.
+    -   **Body-Parser:** Middleware for parsing incoming request bodies.
+-   **Deployment:**
+    -   The Express server is configured to serve the static, built React application and provide a backend API from a single origin.
 
-## Expanding the ESLint configuration
+## 📂 Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The project is organized into two main parts within the `home` directory:
