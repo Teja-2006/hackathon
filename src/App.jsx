@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  Tag,
+  Tag as TagIcon,
   Utensils,
   Apple,
   Cookie,
-  BookOpen,
   Warehouse,
   Dumbbell,
   MessageSquare,
   Send,
-  Monitor,
   Shirt,
   Book,
   Home,
@@ -30,180 +28,163 @@ import {
   Image,
   Settings,
   Building,
+  Clock,
+  Map,
+  ClipboardList,
+  Info,
+  ListChecks,
+  ArrowRight,
 } from "lucide-react";
 
-// --- Base Mock Data ---
-const BASE_MOCK_INVENTORY = [
+// --- MOCK DATA FOR LOCAL STATE ---
+const MOCK_INVENTORY = [
   {
     id: 1,
-    name: "Ergonomic Mechanical Keyboard",
+    name: "Wireless Mouse",
     category: "Electronics",
-    price: 120.0,
-    description: "High-quality clicky keys for comfortable typing.",
-    details:
-      "Switches: Brown, Connectivity: Wired/Bluetooth, Color: Black, Weight: 1.2kg",
-    donorName: "Jane Doe",
-    donorAddress: "123 Tech Lane",
-    donorLocation: "Austin, TX",
+    condition: "New",
+    description: "Ergonomic, black, unopened.",
+    details: "Brand: Logitech, Model M300.",
+    donatorName: "Alice Smith",
+    donatorAddress: "123 Main St",
+    donatorLocation: "Austin, TX",
+    timestamp: Date.now() - 500000,
+    price: 15,
   },
   {
     id: 2,
-    name: '4K UltraWide Monitor 34"',
-    category: "Electronics",
-    price: 750.5,
-    description: "Stunning visual fidelity and massive screen real estate.",
-    details:
-      "Resolution: 3440x1440, Refresh Rate: 100Hz, Ports: HDMI, DisplayPort",
-    donorName: "John Smith",
-    donorAddress: "45 Monitor Blvd",
-    donorLocation: "San Francisco, CA",
+    name: "Men's Denim Jeans",
+    category: "Clothing",
+    condition: "Excellent",
+    description: "Size 32x32, light wear.",
+    details: "Brand: Levi's, 501 fit.",
+    donatorName: "Bob Johnson",
+    donatorAddress: "45 Elm Rd",
+    donatorLocation: "Austin, TX",
+    timestamp: Date.now() - 400000,
+    price: 30,
   },
   {
     id: 3,
-    name: "Wireless Gaming Mouse",
-    category: "Electronics",
-    price: 55.99,
-    description: "Low latency, high precision sensor for competitive gaming.",
-    details:
-      "DPI: 16000, Weight: 90g, Battery Life: 70 hours, programmable buttons.",
-    donorName: "Jane Doe",
-    donorAddress: "123 Tech Lane",
-    donorLocation: "Austin, TX",
+    name: "Hardcover Novel",
+    category: "Books",
+    condition: "Good",
+    description: "Sci-fi classic, minor damage on spine.",
+    details: "Title: Dune, Author: Frank Herbert.",
+    donatorName: "Charlie Brown",
+    donatorAddress: "7 Pine Ln",
+    donatorLocation: "Dallas, TX",
+    timestamp: Date.now() - 300000,
+    price: 5,
   },
   {
     id: 4,
-    name: "Noise-Cancelling Headphones",
-    category: "Electronics",
-    price: 299.0,
-    description: "Immersive sound experience with industry-leading ANC.",
-    details:
-      "Battery: 30 hours, Noise Cancellation: Adaptive, Includes hard shell carrying case.",
-    donorName: "Mike Jones",
-    donorAddress: "789 Headset Way",
-    donorLocation: "New York, NY",
+    name: "Gardening Trowel Set",
+    category: "Home & Garden",
+    condition: "New",
+    description: "Set of 3 stainless steel tools.",
+    details: "Includes trowel, transplanter, and cultivator.",
+    donatorName: "Dana Scully",
+    donatorAddress: "10 X-File St",
+    donatorLocation: "Houston, TX",
+    timestamp: Date.now() - 200000,
+    price: 10,
   },
   {
     id: 5,
-    name: "Portable SSD 1TB",
-    category: "Electronics",
-    price: 110.0,
-    description: "Blazing fast external storage for large files.",
-    details:
-      "Read Speed: 540MB/s, Interface: USB 3.1 Gen 2, Durable, shock-resistant casing.",
-    donorName: "John Smith",
-    donorAddress: "45 Monitor Blvd",
-    donorLocation: "San Francisco, CA",
-  },
-  {
-    id: 6,
-    name: "Adjustable LED Desk Lamp",
-    category: "Home & Garden",
-    price: 79.99,
-    description: "Dimmable light for comfortable reading or working.",
-    details:
-      "Settings: 5 brightness levels, Color Temp: 3000K-6000K, Flexible neck, USB charging port.",
-    donorName: "Sarah Connor",
-    donorAddress: "101 Bright St",
-    donorLocation: "Seattle, WA",
-  },
-  {
-    id: 7,
-    name: "Waterproof Gardening Gloves",
-    category: "Home & Garden",
-    price: 15.0,
-    description: "Durable gloves for heavy-duty yard work.",
-    details:
-      "Material: Nitrile and Nylon blend, Size: Medium, Puncture resistant.",
-    donorName: "Sarah Connor",
-    donorAddress: "101 Bright St",
-    donorLocation: "Seattle, WA",
-  },
-  {
-    id: 8,
-    name: "Classic Fit Cotton T-Shirt",
-    category: "Clothing",
-    price: 25.0,
-    description: "Soft and breathable 100% cotton casual shirt.",
-    details:
-      "Material: 100% Organic Cotton, Color: Heather Gray, Available sizes: S, M, L, XL.",
-    donorName: "David Lee",
-    donorAddress: "202 Fashion Lane",
-    donorLocation: "Los Angeles, CA",
-  },
-  {
-    id: 9,
-    name: "Best-Selling Thriller Novel",
-    category: "Books",
-    price: 14.99,
-    description: "A gripping story with unexpected twists and turns.",
-    details:
-      "Author: J. D. Winters, Pages: 450, Format: Hardcover, Genre: Psychological Thriller.",
-    donorName: "David Lee",
-    donorAddress: "202 Fashion Lane",
-    donorLocation: "Los Angeles, CA",
-  },
-  {
-    id: 10,
-    name: "Professional Yoga Mat",
+    name: "Yoga Mat",
     category: "Sports",
-    price: 49.99,
-    description: "Non-slip surface for perfect grip and balance.",
-    details:
-      "Thickness: 6mm, Material: TPE, Includes carrying strap, Easy to clean.",
-    donorName: "Mike Jones",
-    donorAddress: "789 Headset Way",
-    donorLocation: "New York, NY",
-  },
-  {
-    id: 11,
-    name: "USB-C Docking Station",
-    category: "Electronics",
-    price: 150.0,
-    description: "One cable solution for all your peripheral needs.",
-    details:
-      "Ports: 2x HDMI, 3x USB-A, 1x Ethernet, PD Charging, Aluminum casing.",
-    donorName: "Sarah Connor",
-    donorAddress: "101 Bright St",
-    donorLocation: "Seattle, WA",
+    condition: "Used",
+    description: "Blue, thick foam, good grip.",
+    details: "Thickness: 6mm, includes carrying strap.",
+    donatorName: "Fox Mulder",
+    donatorAddress: "11 Eerie Way",
+    donatorLocation: "Austin, TX",
+    timestamp: Date.now() - 100000,
+    price: 20,
   },
 ];
 
 const MOCK_FOOD_ITEMS = [
   {
-    name: "Canned Vegetables",
+    id: "f1",
+    name: "Canned Vegetables (Case)",
     type: "Pantry",
     available: 85,
     details: "12-pack mixed veggies, shelf life 2 years.",
+    storageLocation: "Pantry",
+    specificLocation: "Shelf 1A",
+    timestamp: Date.now() - 90000,
+    donatorName: "Farm Co.",
   },
   {
+    id: "f2",
     name: "Trail Mix Packs",
     type: "Snack",
     available: 52,
     details: "Individual 100g packs, variety of nuts and dried fruit.",
+    storageLocation: "Cool/Dry",
+    specificLocation: "Storage Bin 5",
+    timestamp: Date.now() - 80000,
+    donatorName: "Snack Inc.",
   },
   {
-    name: "Boxed Pasta",
-    type: "Pantry",
-    available: 120,
-    details: "500g boxes, mix of spaghetti and penne.",
-  },
-  {
-    name: "Fresh Apples",
+    id: "f3",
+    name: "Fresh Apples (Box)",
     type: "Produce",
     available: 25,
     details: "Crisp Red Delicious variety, picked last week.",
+    storageLocation: "Refrigerated",
+    specificLocation: "Fridge Unit 3",
+    timestamp: Date.now() - 70000,
+    donatorName: "Local Farmer",
   },
 ];
 
-// Get unique categories and add 'All'
-const categories = [
-  "All",
-  ...new Set(BASE_MOCK_INVENTORY.map((item) => item.category)),
+const NGO_REQUIREMENTS = [
+  {
+    name: "Non-Perishable Canned Goods",
+    quantity: "300 units",
+    status: "High Priority",
+  },
+  {
+    name: "New/Gently Used Children's Books",
+    quantity: "50 units",
+    status: "Medium Priority",
+  },
+  {
+    name: "First Aid Supplies (Unopened)",
+    quantity: "20 kits",
+    status: "Medium Priority",
+  },
+  {
+    name: "Warm Winter Coats (Adult S/M/L)",
+    quantity: "75 coats",
+    status: "Critical Need",
+  },
 ];
 
+// --- Global Constants ---
+const categories = [
+  "All",
+  "Electronics",
+  "Clothing",
+  "Books",
+  "Home & Garden",
+  "Sports",
+];
 const CONDITIONS = ["New", "Excellent", "Good", "Used", "Fair"];
 const FOOD_TYPES = ["Produce", "Snack", "Pantry"];
 const LOW_STOCK_THRESHOLD = 20;
+const FOOD_STORAGE_OPTIONS = ["Pantry", "Refrigerated", "Frozen", "Cool/Dry"];
+
+// Mock API Constants
+const MOCK_IMAGGA_KEY = "acc_1611ccc4a20d56a";
+const FUZZY_THRESHOLD = -2500;
+
+// ====================================================================
+// SECTION 1: UTILITY FUNCTIONS
+// ====================================================================
 
 /**
  * Helper function to return an appropriate icon component for the category.
@@ -223,7 +204,7 @@ const getCategoryIcon = (category) => {
     case "Sports":
       return <Dumbbell {...iconProps} />;
     default:
-      return <Wrench {...iconProps} />; // Default Icon
+      return <Wrench {...iconProps} />;
   }
 };
 
@@ -267,9 +248,57 @@ const getFoodIcon = (type) => {
 };
 
 /**
+ * Custom fuzzy matching function for duplicate checking.
+ */
+const checkFuzzyDuplicates = (query, inventory) => {
+  let bestMatch = null;
+  let highestScore = FUZZY_THRESHOLD;
+  const queryLower = query.toLowerCase();
+
+  for (const item of inventory) {
+    if (item.type && item.storageLocation) continue;
+
+    const target = item.name.toLowerCase();
+    let score = 0;
+    const lenDiff = Math.abs(queryLower.length - target.length);
+    score -= lenDiff * 100;
+    if (target.includes(queryLower) || queryLower.includes(target)) {
+      score += 1500;
+    } else {
+      let matchCount = 0;
+      for (let i = 0; i < queryLower.length; i++) {
+        if (target.includes(queryLower[i])) {
+          matchCount++;
+        }
+      }
+      score += matchCount * 100;
+    }
+    const queryWords = queryLower.split(" ").filter((w) => w.length > 2);
+    const targetWords = target.split(" ").filter((w) => w.length > 2);
+    for (const qWord of queryWords) {
+      if (targetWords.includes(qWord)) {
+        score += 500;
+      }
+    }
+    const finalScore = score > 0 ? -Math.max(100, 5000 - score) : -5000;
+    if (finalScore > highestScore) {
+      highestScore = finalScore;
+      bestMatch = item;
+    }
+  }
+
+  if (highestScore > FUZZY_THRESHOLD) {
+    return { item: bestMatch, score: highestScore };
+  }
+  return null;
+};
+
+// ====================================================================
+// SECTION 2: INVENTORY CARD COMPONENTS
+// ====================================================================
+
+/**
  * ItemCard Component
- * Displays individual item information in a stylized card.
- * NOW TAKES onClick PROP
  */
 const ItemCard = ({ item, onClick }) => (
   <div
@@ -293,7 +322,7 @@ const ItemCard = ({ item, onClick }) => (
     </p>
     <div className="space-y-1 text-xs">
       <div className="flex items-center text-gray-600">
-        <Tag size={12} className="mr-1 text-gray-500" />
+        <TagIcon size={12} className="mr-1 text-gray-500" />
         <span className="font-medium">{item.category}</span>
       </div>
     </div>
@@ -302,124 +331,152 @@ const ItemCard = ({ item, onClick }) => (
 
 /**
  * FoodCard Component
- * Displays individual food item information in a smaller card.
  */
-const FoodCard = ({ food }) => {
-  // Determine if stock is critically low
-  const isLowStock = food.available < LOW_STOCK_THRESHOLD;
+const FoodCard = ({ food, onClick }) => {
+  const availableQuantity = food.available || 0;
+  const isLowStock = availableQuantity < LOW_STOCK_THRESHOLD;
 
-  // Set dynamic color classes for the stock badge (Gray theme)
   const badgeBg = isLowStock ? "bg-red-500" : "bg-gray-50";
   const badgeBorder = isLowStock ? "border-red-700" : "border-gray-200";
   const badgeText = isLowStock ? "text-white" : "text-gray-700";
 
   return (
-    <div className="flex justify-between items-center text-xs text-gray-700 bg-white p-2 rounded-lg border border-gray-200 shadow-sm transition duration-150 hover:shadow-md transform hover:scale-[1.01] hover:bg-gray-50 cursor-pointer">
+    <div
+      className="flex justify-between items-center text-xs text-gray-700 bg-white p-2 rounded-lg border border-gray-200 shadow-sm transition duration-150 hover:shadow-md transform hover:scale-[1.01] hover:bg-gray-50 cursor-pointer"
+      onClick={onClick ? () => onClick(food) : undefined}
+    >
       <div className="flex flex-col">
         <div className="flex items-center">
-          {/* Displaying the Icon */}
           {getFoodIcon(food.type)}
           <span className="font-bold text-gray-800">{food.name}</span>
         </div>
         <span className="text-xs text-gray-500 mt-0.5 ml-5">{food.type}</span>
       </div>
 
-      {/* Small Display Box for Stock - Dynamic Styling */}
       <div
         className={`flex items-center justify-center p-1.5 border rounded-md shadow-inner ${badgeBg} ${badgeBorder}`}
       >
         <span className={`text-xs font-extrabold ${badgeText}`}>
-          {food.available}
+          {availableQuantity}
         </span>
       </div>
     </div>
   );
 };
 
+// ====================================================================
+// SECTION 3: HOME VIEW AND DETAIL PAGES
+// ====================================================================
+
 /**
- * Splash Screen Component
+ * Chatbot Component
  */
-const SplashScreen = ({ gradientStyle }) => {
-  const TAGLINE = "Be the light in their darkest chapter";
+const Chatbot = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      sender: "Bot",
+      text: "Hello! I am your Inventory Assistant. How can I help you search or manage your stock today?",
+    },
+  ]);
+  const [input, setInput] = useState("");
 
-  // GSAP animation for the title (Pulse) and tagline (Typing)
-  useEffect(() => {
-    // Ensure gsap is loaded before trying to use it
-    if (window.gsap) {
-      const tl = window.gsap.timeline();
+  const handleSend = () => {
+    if (input.trim() === "") return;
 
-      // 1. Home Title Animation (Pulse)
-      tl.to("#splash-title", {
-        opacity: 0.2,
-        scale: 0.95,
-        duration: 0.75,
-        ease: "power2.inOut",
-        repeat: -1,
-        yoyo: true,
-      });
+    const newMessage = { sender: "User", text: input.trim() };
+    setMessages([...messages, newMessage]);
+    setInput("");
 
-      // 2. Tagline Word-Typing Effect
-      // Initially set all characters to hidden
-      window.gsap.set(".tagline-char", { opacity: 0, y: 5 });
-
-      // Animate them in sequentially
-      window.gsap.to(".tagline-char", {
-        opacity: 1,
-        y: 0,
-        stagger: 0.03, // Controls the speed of the typing effect
-        duration: 0.05,
-        ease: "none",
-        delay: 0.5, // Start after a slight delay
-      });
-
-      // Removed exit timer logic as CSS exit animation is removed
-    }
-  }, []);
-
-  // Function to split the tagline into individual character spans
-  const splitTagline = (text) => {
-    return text.split("").map((char, index) => (
-      <span
-        key={index}
-        className="tagline-char"
-        style={{ display: "inline-block" }}
-      >
-        {char === " " ? "\u00A0" : char}{" "}
-        {/* Replace space with non-breaking space for layout */}
-      </span>
-    ));
+    // Mock Bot Response Logic
+    setTimeout(() => {
+      const botResponse = {
+        sender: "Bot",
+        text: `Thanks for asking about "${input.trim()}." I can look that up for you!`,
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    }, 1000);
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen font-sans`}
-      style={gradientStyle}
-    >
-      <h1
-        id="splash-title" // ID needed for GSAP targeting
-        className="text-6xl font-extrabold text-white tracking-widest uppercase drop-shadow-xl mb-4"
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Chat Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-2xl flex items-center justify-center transition duration-300 transform hover:scale-105"
+        title={isOpen ? "Close Chat" : "Open Chat"}
       >
-        Home
-      </h1>
-      <div className="text-xl font-medium text-white drop-shadow-lg flex flex-wrap justify-center">
-        {/* Apply typing effect to the entire tagline */}
-        {splitTagline(TAGLINE)}
-      </div>
+        <MessageSquare size={24} />
+      </button>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="absolute bottom-16 right-0 w-80 h-96 bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+          {/* Chat Header */}
+          <div className="bg-gray-600 p-3 text-white font-bold flex justify-between items-center shadow-md">
+            Inventory Support Chat
+            <span className="text-xs bg-green-400 px-2 py-0.5 rounded-full font-medium">
+              Online
+            </span>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  msg.sender === "User" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-[75%] px-3 py-2 rounded-xl text-sm shadow-sm ${
+                    msg.sender === "User"
+                      ? "bg-gray-500 text-white rounded-br-none"
+                      : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chat Input */}
+          <div className="p-3 border-t border-gray-200 bg-white">
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Type your question..."
+                className="flex-1 p-2 border border-gray-300 rounded-full focus:ring-gray-500 focus:border-gray-500 text-sm"
+              />
+              <button
+                onClick={handleSend}
+                className="ml-2 w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-full flex items-center justify-center transition duration-150"
+                title="Send"
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 /**
- * Item Detail Page Component
+ * Item Detail Page Component (For General Products)
  */
 const ItemDetailPage = ({ item, setCurrentPage }) => {
   const handleMapClick = () => {
-    if (item.donorLocation) {
-      // Encode the location string for use in a URL query
+    if (item.donatorLocation) {
       const mapQuery = encodeURIComponent(
-        item.donorLocation + " " + item.donorAddress
+        item.donatorLocation + " " + item.donatorAddress
       );
-      // Open Google Maps link in a new tab
       window.open(
         `https://www.google.com/maps/search/?api=1&query=${mapQuery}`,
         "_blank"
@@ -463,7 +520,7 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
             <div className="space-y-3 pt-4 border-t border-gray-200">
               {/* General Item Details */}
               <div className="flex items-center text-gray-700">
-                <Tag size={20} className="mr-2 text-gray-500" />
+                <TagIcon size={20} className="mr-2 text-gray-500" />
                 <span className="font-bold">Category:</span>
                 <span className="ml-2 font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">
                   {item.category}
@@ -479,17 +536,17 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
                 </p>
               </div>
 
-              {/* --- DONOR DETAILS SECTION --- */}
+              {/* --- DONATOR DETAILS SECTION --- */}
               <div className="pt-4 border-t border-gray-200 space-y-3">
                 <h3 className="text-xl font-bold text-gray-700">
-                  Donor Information
+                  Donator Information
                 </h3>
 
                 <div className="space-y-2">
                   <div className="flex items-center text-gray-700">
                     <User size={16} className="mr-2 text-gray-500" />
-                    <span className="font-bold w-24">Donor:</span>
-                    <span>{item.donorName || "N/A"}</span>
+                    <span className="font-bold w-24">Donator:</span>
+                    <span>{item.donatorName || "N/A"}</span>
                   </div>
                   <div className="flex items-start text-gray-700">
                     <MapPin
@@ -498,18 +555,18 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
                     />
                     <div className="flex flex-col">
                       <span className="font-bold">Address:</span>
-                      <span>{item.donorAddress || "N/A"}</span>
+                      <span>{item.donatorAddress || "N/A"}</span>
                     </div>
                   </div>
                   <div className="flex items-center text-gray-700">
                     <Globe size={16} className="mr-2 text-gray-500" />
                     <span className="font-bold w-24">Location:</span>
-                    <span>{item.donorLocation || "N/A"}</span>
+                    <span>{item.donatorLocation || "N/A"}</span>
                   </div>
                 </div>
 
                 {/* Map Button */}
-                {item.donorLocation && (
+                {item.donatorLocation && (
                   <button
                     onClick={handleMapClick}
                     className="mt-3 flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150"
@@ -519,7 +576,7 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
                   </button>
                 )}
               </div>
-              {/* --- END DONOR DETAILS SECTION --- */}
+              {/* --- END DONATOR DETAILS SECTION --- */}
             </div>
           </div>
         </div>
@@ -529,106 +586,1302 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
 };
 
 /**
- * Add Item Page Component (The new page)
- * Now accepts a callback function to add the new item.
+ * Food Item Detail Page Component (For Food Products)
  */
-// Define the Mock API key outside the component (as a real key would be)
-const MOCK_IMAGGA_KEY = "acc_1611ccc4a20d56a";
+const FoodItemDetailPage = ({ item, setCurrentPage }) => {
+  // Convert expiryDate string to locale string
+  const expiryDate = item.expiryDate
+    ? new Date(item.expiryDate).toLocaleDateString()
+    : "N/A";
 
-/**
- * Simplified fuzzysort-like function to check for duplicates.
- * Returns the best match object if the score is above a threshold.
- * Score is a negative integer (closer to 0 is better).
- */
-const FUZZY_THRESHOLD = -2500;
-const checkFuzzyDuplicates = (query, inventory) => {
-  let bestMatch = null;
-  let highestScore = FUZZY_THRESHOLD;
+  return (
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        <button
+          onClick={() => setCurrentPage("home")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Inventory</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          Food Item Details
+        </h1>
+      </header>
 
-  // Normalize and pre-process the query
-  const queryLower = query.toLowerCase();
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Left: Icon/Placeholder */}
+          <div
+            className={`w-full md:w-1/3 h-56 flex items-center justify-center rounded-lg border border-gray-200 bg-green-500 shadow-lg flex-shrink-0`}
+          >
+            <Utensils size={60} className="text-white drop-shadow-md" />
+          </div>
 
-  for (const item of inventory) {
-    const target = item.name.toLowerCase();
-    let score = 0;
+          {/* Right: Details */}
+          <div className="md:w-2/3">
+            <h2 className="text-4xl font-extrabold text-gray-800 mb-2">
+              {item.name}
+            </h2>
+            <p className="text-lg text-gray-600 mb-4">{item.details}</p>
 
-    // Simple fuzzy logic: base penalty on length difference
-    const lenDiff = Math.abs(queryLower.length - target.length);
-    score -= lenDiff * 100;
+            <div className="space-y-3 pt-4 border-t border-gray-200">
+              {/* Food Specific Details: Type */}
+              <div className="flex items-center text-gray-700">
+                <TagIcon size={20} className="mr-2 text-gray-500" />
+                <span className="font-bold">Type:</span>
+                <span className="ml-2 font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">
+                  {item.type}
+                </span>
+              </div>
 
-    // Check for common prefix/suffix
-    if (target.includes(queryLower) || queryLower.includes(target)) {
-      score += 1500; // Strong match if one contains the other
-    } else {
-      // Check for character matches and position penalty (basic version of Levenshtein/FuzzySort idea)
-      let matchCount = 0;
-      for (let i = 0; i < queryLower.length; i++) {
-        if (target.includes(queryLower[i])) {
-          matchCount++;
-        }
-      }
-      score += matchCount * 100;
-    }
+              {/* Food Specific Details: General Storage Location */}
+              <div className="flex items-center text-gray-700">
+                <Warehouse size={20} className="mr-2 text-gray-500" />
+                <span className="font-bold">General Storage:</span>
+                <span className="ml-2 font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">
+                  {item.storageLocation}
+                </span>
+              </div>
 
-    // Check for exact word matches (ignoring order)
-    const queryWords = queryLower.split(" ").filter((w) => w.length > 2);
-    const targetWords = target.split(" ").filter((w) => w.length > 2);
-    for (const qWord of queryWords) {
-      if (targetWords.includes(qWord)) {
-        score += 500;
-      }
-    }
+              {/* Food Specific Details: Specific Location (New Field) */}
+              <div className="flex items-center text-gray-700">
+                <MapPin size={20} className="mr-2 text-gray-500" />
+                <span className="font-bold">Specific Location:</span>
+                <span className="ml-2 font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">
+                  {item.specificLocation || "N/A"}
+                </span>
+              </div>
 
-    // Final score should be negative, lower magnitude is better.
-    // We invert the score logic to return a negative score similar to fuzzysort convention for simplicity.
-    const finalScore = score > 0 ? -Math.max(100, 5000 - score) : -5000;
+              {/* Food Specific Details: Expiry Date */}
+              <div className="flex items-center text-gray-700">
+                <Clock size={20} className="mr-2 text-gray-500" />
+                <span className="font-bold">Expiry Date:</span>
+                <span className="ml-2 font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">
+                  {expiryDate}
+                </span>
+              </div>
 
-    if (finalScore > highestScore) {
-      highestScore = finalScore;
-      bestMatch = item;
-    }
-  }
-
-  if (highestScore > FUZZY_THRESHOLD) {
-    return { item: bestMatch, score: highestScore };
-  }
-  return null;
+              {/* Food Specific Details: Quantity */}
+              <div className="flex items-center text-gray-700">
+                <Plus size={20} className="mr-2 text-gray-500" />
+                <span className="font-bold">Quantity:</span>
+                <span className="ml-2 font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">
+                  {item.quantity} units
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
+/**
+ * Home View Component
+ */
+const HomeView = ({
+  searchTerm,
+  setSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
+  filteredItems,
+  loading,
+  setCurrentPage,
+  setSelectedItem,
+  isLoggedIn,
+  currentUser,
+  foodItems, // Pass foodItems separately for the sidebar
+}) => {
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Function to handle clicking an ItemCard (Product)
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    setCurrentPage("detail");
+  };
+
+  // Function to handle clicking a FoodCard
+  const handleFoodClick = (food) => {
+    setSelectedItem(food);
+    setCurrentPage("detail");
+  };
+
+  // Handler to navigate to the Add Food Item page
+  const handleAddFoodClick = () => {
+    if (isLoggedIn && currentUser.userType === "individual") {
+      setCurrentPage("addFood");
+    } else if (isLoggedIn && currentUser.userType === "ngo") {
+      // NGO users cannot submit items directly, they go to the NGO Hub
+      setCurrentPage("ngoDonation");
+    } else {
+      // Non-logged-in users must log in first
+      setCurrentPage("selectLogin");
+    }
+  };
+
+  const handleDonateClick = () => {
+    if (isLoggedIn) {
+      // Check if logged in user is an NGO (Mock)
+      if (currentUser.userType === "ngo") {
+        setCurrentPage("ngoDonation"); // Navigate to NGO-specific view (Acceptance Hub)
+      } else {
+        setCurrentPage("add"); // Navigate to Individual Donator form
+      }
+    } else {
+      setCurrentPage("selectLogin");
+    }
+  };
+
+  return (
+    <>
+      {/* Top Bar for Header and Add Item Button */}
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          Home
+        </h1>
+
+        <div className="flex items-center space-x-3">
+          {/* User Profile / Login Button */}
+          {isLoggedIn ? (
+            <>
+              <div className="bg-gray-100 px-3 py-1 text-sm rounded-full text-gray-600 border border-gray-300">
+                User:{" "}
+                <span className="font-mono font-semibold capitalize">
+                  {currentUser?.userType || "N/A"}
+                </span>
+              </div>
+              <button
+                onClick={() => setCurrentPage("profile")}
+                className="flex items-center justify-center p-2 rounded-full border border-gray-300 shadow-md bg-white hover:bg-gray-50 transition duration-150"
+                title="My Profile"
+              >
+                <img
+                  src={currentUser?.profilePicture}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full"
+                />
+              </button>
+              <button
+                onClick={handleDonateClick}
+                className="flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 transform hover:scale-105"
+              >
+                <Heart size={20} className="mr-2" />
+                Donate Item
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setCurrentPage("selectLogin")}
+              className="flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 transform hover:scale-105"
+            >
+              <LogIn size={20} className="mr-2" />
+              Login
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Main Layout: TWO-COLUMN Layout on large screens */}
+      <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
+        {/* Column 1 (Left): Search, Category Filter, AND FOOD ITEMS */}
+        <div className="lg:w-1/3 w-full space-y-6 h-fit lg:sticky top-6">
+          {/* 1. Search Box and Category Filter Panel */}
+          <div className="p-5 bg-white/90 rounded-xl shadow-xl border-t-4 border-gray-500 content-panel">
+            {/* Search & Filter Title with Background */}
+            <h2 className="xl font-bold text-gray-800 mb-5 p-2 bg-gray-100 flex items-center">
+              <Search className="mr-2 text-gray-500" size={20} />
+              Search & Filter
+            </h2>
+
+            {/* Search Input */}
+            <div className="relative mb-6">
+              <input
+                type="text"
+                placeholder="Search by name, category, or keyword..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full pl-9 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-150 text-sm text-gray-700"
+              />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+            </div>
+
+            {/* Category Filter Buttons */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              {/* Filter by Category Title with Background */}
+              <h3 className="text-base font-bold text-gray-800 mb-3 p-1 bg-gray-100 rounded-md flex items-center">
+                <TagIcon size={16} className="mr-2 text-gray-500" />
+                Filter by Category
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {categories
+                  .filter((c) => c !== "All")
+                  .map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition duration-150 ${
+                        selectedCategory === cat
+                          ? "bg-gray-600 text-white shadow-md"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-800 hover:scale-[1.03] transform"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                <button
+                  onClick={() => setSelectedCategory("All")}
+                  className={`px-3 py-1 text-xs font-medium rounded-full transition duration-150 ${
+                    selectedCategory === "All"
+                      ? "bg-gray-600 text-white shadow-md"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-800 hover:scale-[1.03] transform"
+                  }`}
+                >
+                  All
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Available Food Items Window (UPDATED) */}
+          <div className="p-5 bg-white/90 rounded-xl shadow-xl border-t-4 border-gray-500 content-panel">
+            <div className="flex justify-between items-center mb-4 p-2 bg-gray-100 rounded-lg">
+              <h3 className="xl font-bold text-gray-800 flex items-center">
+                <Utensils size={20} className="mr-2 text-gray-500" />
+                Available Food Items
+              </h3>
+              {/* Only show Add Food button if logged in as Individual (Donator) */}
+              {isLoggedIn && currentUser.userType === "individual" && (
+                <button
+                  onClick={handleAddFoodClick}
+                  className="flex items-center text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded-full transition duration-150 shadow-md"
+                  title="Add a New Food Donation"
+                >
+                  <Plus size={14} className="mr-1" />
+                  Add Food
+                </button>
+              )}
+            </div>
+
+            {foodItems.length > 0 ? (
+              <div className="space-y-3">
+                {foodItems.map((food, index) => (
+                  <FoodCard
+                    key={food.id || index}
+                    food={food}
+                    onClick={handleFoodClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                No food items available in inventory.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Column 2 (Right): Main Item Window (Products) */}
+        <div className="lg:w-2/3 w-full p-5 bg-white/90 rounded-xl shadow-xl border-t-4 border-gray-500 content-panel">
+          {/* Combined Heading with Category and Count */}
+          <div className="flex justify-between items-baseline mb-5 border-b pb-2">
+            <h2 className="text-xl font-bold text-gray-800">Available Items</h2>
+            <div className="text-right">
+              <span className="text-lg font-extrabold text-gray-600">
+                {filteredItems.length}
+              </span>
+              <span className="text-gray-500 ml-1 text-sm">item(s) found</span>
+              <p className="text-xs text-gray-500 mt-1">
+                Showing results for:{" "}
+                <span className="font-semibold text-gray-600">
+                  {selectedCategory}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Loading/Status Indicators */}
+          {loading && (
+            <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg mb-4">
+              <svg
+                className="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span className="text-gray-600 font-medium text-sm">
+                Searching inventory...
+              </span>
+            </div>
+          )}
+
+          {/* Results Grid */}
+          {!loading && (
+            <>
+              {filteredItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredItems.map(
+                    (item) =>
+                      // Ensure only non-food items are displayed in the main grid
+                      !(item.type && item.storageLocation) && (
+                        <ItemCard
+                          key={item.id}
+                          item={item}
+                          onClick={handleItemClick}
+                        />
+                      )
+                  )}
+                </div>
+              ) : (
+                <div className="text-center p-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <Search size={40} className="mx-auto text-gray-400 mb-3" />
+                  <p className="text-lg font-semibold text-gray-700">
+                    No items match your criteria.
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Try adjusting the search term or category filter.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ====================================================================
+// SECTION 4: AUTHENTICATION COMPONENTS
+// ====================================================================
+
+/**
+ * Select Login Type Page
+ */
+const SelectLoginPage = ({ setCurrentPage }) => {
+  return (
+    <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        <button
+          onClick={() => setCurrentPage("home")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Home</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          Login
+        </h1>
+      </header>
+
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 space-y-6">
+        <p className="text-center text-lg font-semibold text-gray-700">
+          How would you like to access the donation system?
+        </p>
+
+        <div className="space-y-4">
+          {/* Donator Login Option */}
+          <button
+            onClick={() => setCurrentPage("donatorLogin")}
+            className="w-full py-4 px-4 rounded-lg shadow-md font-bold text-lg transition duration-150 bg-gray-600 text-white hover:bg-gray-700 flex items-center justify-center"
+          >
+            <User size={24} className="mr-3" /> Individual Donator
+          </button>
+
+          {/* NGO Login Option */}
+          <button
+            onClick={() => setCurrentPage("ngoLogin")}
+            className="w-full py-4 px-4 rounded-lg shadow-md font-bold text-lg transition duration-150 border-2 border-gray-600 bg-white text-gray-800 hover:bg-gray-50 flex items-center justify-center"
+          >
+            <Building size={24} className="mr-3" /> NGO / Organization
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Dedicated Donator Login Page
+ */
+const DonatorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
+  const userType = "individual";
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [location, setLocation] = useState("");
+  const [isIdVerified, setIsIdVerified] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isPending, setIsPending] = useState(false);
+
+  const handleVerify = async () => {
+    if (!name || !email || !address || !location) {
+      setMessage("Please fill out all required fields.");
+      return;
+    }
+
+    setIsPending(true);
+    setMessage(`Verifying ID and address...`);
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setIsPending(false);
+    setIsIdVerified(true);
+    setMessage("Verification successful! You can now access the form.");
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (!isIdVerified) {
+      setMessage("Please verify your details before proceeding.");
+      return;
+    }
+
+    // Mock login data for authenticated user context
+    const user = {
+      name,
+      email,
+      address,
+      location,
+      userType,
+      profilePicture:
+        "https://placehold.co/100x100/4B5563/FFF?text=" +
+        name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .substring(0, 2)
+          .toUpperCase(),
+      uid: "mock_donator_uid", // Local Mock ID
+    };
+    setCurrentUser(user);
+    setLoggedIn(true);
+    setCurrentPage("add"); // Direct to donation form
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        <button
+          onClick={() => setCurrentPage("selectLogin")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Login Select</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          Individual Donator Login
+        </h1>
+      </header>
+
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500">
+        {message && (
+          <div
+            className={`px-4 py-3 rounded relative mb-4 border ${
+              isIdVerified
+                ? "bg-green-100 border-green-400 text-green-700"
+                : "bg-red-100 border-red-400 text-red-700"
+            }`}
+            role="alert"
+          >
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Individual Specific Fields */}
+          <div>
+            <label
+              htmlFor="loginName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="loginName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="John Doe"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="loginEmail"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="loginEmail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="name@example.com"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="loginAddress"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Address
+            </label>
+            <input
+              type="text"
+              id="loginAddress"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+              placeholder="123 Main St"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="loginLocation"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              City / State
+            </label>
+            <input
+              type="text"
+              id="loginLocation"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+              placeholder="Austin, TX"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+
+          {/* Verification Button */}
+          <button
+            type="button"
+            onClick={handleVerify}
+            disabled={isPending || isIdVerified}
+            className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white transition duration-150 ${
+              isIdVerified
+                ? "bg-green-600"
+                : isPending
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500"
+            }`}
+          >
+            {isPending ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Verifying Details...
+              </>
+            ) : isIdVerified ? (
+              <>
+                <CheckCircle size={16} className="mr-2" />
+                Details Verified
+              </>
+            ) : (
+              <>
+                <User size={16} className="mr-2" />
+                Verify ID & Proceed
+              </>
+            )}
+          </button>
+
+          {/* Login Button (Submit) */}
+          <button
+            type="submit"
+            disabled={!isIdVerified}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white transition duration-150 ${
+              !isIdVerified
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500"
+            }`}
+          >
+            Access Donation Form
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Dedicated NGO Login Page
+ */
+const NgoLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
+  const userType = "ngo";
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [location, setLocation] = useState("");
+  const [registrationId, setRegistrationId] = useState(""); // NGO specific field
+  const [isIdVerified, setIsIdVerified] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isPending, setIsPending] = useState(false);
+
+  const handleVerify = async () => {
+    if (!name || !email || !address || !location || !registrationId) {
+      setMessage("Please fill out all required fields.");
+      return;
+    }
+
+    setIsPending(true);
+    setMessage(`Verifying NGO details and registration ID...`);
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setIsPending(false);
+    setIsIdVerified(true);
+    setMessage("Verification successful! You can now access the hub.");
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (!isIdVerified) {
+      setMessage("Please verify your details before proceeding.");
+      return;
+    }
+
+    // Mock login data for authenticated user context
+    const user = {
+      name,
+      email,
+      address,
+      location,
+      userType,
+      registrationId,
+      profilePicture:
+        "https://placehold.co/100x100/4B5563/FFF?text=" +
+        name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .substring(0, 2)
+          .toUpperCase(),
+      uid: "mock_ngo_uid", // Local Mock ID
+    };
+    setCurrentUser(user);
+    setLoggedIn(true);
+    setCurrentPage("ngoDonation"); // Direct to NGO Donation View/Hub
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        <button
+          onClick={() => setCurrentPage("selectLogin")} // Back to selection page
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Login Select</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          NGO Login
+        </h1>
+      </header>
+
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500">
+        {message && (
+          <div
+            className={`px-4 py-3 rounded relative mb-4 border ${
+              isIdVerified
+                ? "bg-green-100 border-green-400 text-green-700"
+                : "bg-red-100 border-red-400 text-red-700"
+            }`}
+            role="alert"
+          >
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* NGO Specific Fields */}
+          <div>
+            <label
+              htmlFor="loginName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Organization Name
+            </label>
+            <input
+              type="text"
+              id="loginName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="Example Foundation"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="registrationId"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Registration/Tax ID
+            </label>
+            <input
+              type="text"
+              id="registrationId"
+              value={registrationId}
+              onChange={(e) => setRegistrationId(e.target.value)}
+              required
+              placeholder="e.g., 501(c)(3) number"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="loginEmail"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Contact Email
+            </label>
+            <input
+              type="email"
+              id="loginEmail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="contact@ngo.org"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="loginAddress"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Office Address
+            </label>
+            <input
+              type="text"
+              id="loginAddress"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+              placeholder="456 Corporate Ave"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="loginLocation"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              City / State
+            </label>
+            <input
+              type="text"
+              id="loginLocation"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+              placeholder="Houston, TX"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+
+          {/* Verification Button */}
+          <button
+            type="button"
+            onClick={handleVerify}
+            disabled={isPending || isIdVerified}
+            className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white transition duration-150 ${
+              isIdVerified
+                ? "bg-green-600"
+                : isPending
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500"
+            }`}
+          >
+            {isPending ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Verifying Details...
+              </>
+            ) : isIdVerified ? (
+              <>
+                <CheckCircle size={16} className="mr-2" />
+                Details Verified
+              </>
+            ) : (
+              <>
+                <Building size={16} className="mr-2" />
+                Verify NGO Status
+              </>
+            )}
+          </button>
+
+          {/* Login Button (Submit) */}
+          <button
+            type="submit"
+            disabled={!isIdVerified}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white transition duration-150 ${
+              !isIdVerified
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500"
+            }`}
+          >
+            Access Hub
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Donator Profile Page Component
+ */
+const DonatorProfilePage = ({
+  currentUser,
+  setCurrentPage,
+  setLoggedIn,
+  setCurrentUser,
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(currentUser?.name || "");
+
+  if (!currentUser) {
+    setCurrentPage("home");
+    return null;
+  }
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setLoggedIn(false);
+    setCurrentPage("home");
+  };
+
+  const handleSave = () => {
+    setCurrentUser({ ...currentUser, name: editedName });
+    setIsEditing(false);
+  };
+
+  // Mock profile picture URL (using initials)
+  const initials =
+    (isEditing ? editedName : currentUser.name)
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase() || "AN"; // Safely handle null/undefined name
+  const profilePicUrl = `https://placehold.co/150x150/4B5563/FFFFFF?text=${initials}`;
+
+  // Helper for profile details based on user type
+  const nameLabel =
+    currentUser.userType === "individual"
+      ? "Donator Name"
+      : "Organization Name";
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 content-panel">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        <button
+          onClick={() => setCurrentPage("home")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Home</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          My Profile
+        </h1>
+      </header>
+
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
+        {/* Profile Picture Section */}
+        <div className="flex flex-col items-center border-b border-gray-200 pb-6">
+          <img
+            src={profilePicUrl}
+            alt="Profile Picture"
+            className="w-36 h-36 rounded-full object-cover border-4 border-gray-300 shadow-xl"
+          />
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              className="text-4xl font-bold text-gray-800 mt-4 bg-gray-100 border-2 border-gray-300 rounded-lg text-center"
+            />
+          ) : (
+            <h2 className="text-4xl font-bold text-gray-800 mt-4">
+              {currentUser.name || "Anonymous Donator"}
+            </h2>
+          )}
+          <p className="text-gray-500">{currentUser.email || "N/A"}</p>
+
+          {/* Mock Profile Picture Uploader */}
+          <div className="mt-4 flex items-center space-x-2 text-sm text-gray-600">
+            <Image size={16} className="text-gray-500" />
+            <span>Upload/Change Picture (Mock)</span>
+          </div>
+        </div>
+
+        {/* Details Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+          {/* Personal Details */}
+          <div className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-700 border-b pb-2 mb-3 flex items-center">
+              <User size={20} className="mr-2 text-gray-500" /> Personal Details
+            </h3>
+            <div className="text-gray-700">
+              <span className="font-semibold block">{nameLabel}:</span>
+              <span className="text-gray-600">{currentUser.name || "N/A"}</span>
+            </div>
+            <div className="text-gray-700">
+              <span className="font-semibold block">User ID:</span>
+              <span className="text-gray-600 font-mono">
+                {currentUser.uid || "N/A"}
+              </span>
+            </div>
+            <div className="text-gray-700">
+              <span className="font-semibold block">User Type:</span>
+              <span className="text-gray-600 capitalize">
+                {currentUser.userType || "N/A"}
+              </span>
+            </div>
+            <div className="text-gray-700">
+              <span className="font-semibold block">Email:</span>
+              <span className="text-gray-600">
+                {currentUser.email || "N/A"}
+              </span>
+            </div>
+            <div className="text-gray-700">
+              <span className="font-semibold block">Verification Status:</span>
+              <span className="text-green-600 font-bold flex items-center">
+                <CheckCircle size={16} className="mr-1" /> Verified Donator
+              </span>
+            </div>
+            {currentUser.registrationId && (
+              <div className="text-gray-700">
+                <span className="font-semibold block">Registration ID:</span>
+                <span className="text-gray-600">
+                  {currentUser.registrationId}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Contact Details */}
+          <div className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-700 border-b pb-2 mb-3 flex items-center">
+              <MapPin size={20} className="mr-2 text-gray-500" /> Contact &
+              Location
+            </h3>
+            <div className="text-gray-700">
+              <span className="font-semibold block">Address:</span>
+              <span className="text-gray-600">
+                {currentUser.address || "N/A"}
+              </span>
+            </div>
+            <div className="text-gray-700">
+              <span className="font-semibold block">Location:</span>
+              <span className="text-gray-600">
+                {currentUser.location || "N/A"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="pt-6 border-t border-gray-200 flex justify-between">
+          {isEditing ? (
+            <button
+              onClick={handleSave}
+              className="flex items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 transition duration-150"
+            >
+              <CheckCircle size={18} className="mr-2" />
+              Save Changes
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
+            >
+              <Settings size={18} className="mr-2" />
+              Edit Profile
+            </button>
+          )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition duration-150"
+          >
+            <LogOut size={18} className="mr-2" />
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ====================================================================
+// SECTION 5: DONATION FORMS
+// ====================================================================
+
+/**
+ * NEW: NGO Donation Acceptance/Requirements View
+ * This view is shown to logged-in NGO users when they click "Donate Item".
+ */
+const NgoDonationView = ({
+  setCurrentPage,
+  inventory,
+  foodItems,
+  setSelectedItem,
+}) => {
+  // Combine all available inventory for review
+  const allAvailableItems = [...inventory, ...foodItems].sort(
+    (a, b) => (b.timestamp || 0) - (a.timestamp || 0)
+  );
+
+  // Handler for NGO accepting a pending donation (mock action)
+  const handleAcceptDonation = (itemId, itemName) => {
+    console.log(`NGO Accepted Donation: ${itemName} (ID: ${itemId})`);
+    // We use alert here temporarily since this is a mock action button.
+    // NOTE: In a real environment, alert() is blocked. Use a custom modal instead.
+    alert(`Successfully reviewed and accepted the donation: ${itemName}`);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Critical Need":
+        return "bg-red-500 text-white";
+      case "High Priority":
+        return "bg-orange-500 text-white";
+      case "Medium Priority":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        <button
+          onClick={() => setCurrentPage("home")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+        >
+          <ChevronLeft size={24} className="mr-2" />
+          <span className="font-semibold text-lg">Back to Home</span>
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          NGO Donation Hub
+        </h1>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Column 1: NGO REQUIREMENTS LIST */}
+        <div className="lg:col-span-1 p-6 bg-white/90 rounded-xl shadow-2xl border-t-4 border-red-500 content-panel space-y-4">
+          <h2 className="text-2xl font-bold text-red-700 flex items-center border-b pb-3 mb-4">
+            <ListChecks size={24} className="mr-3" />
+            Our Critical Requirements
+          </h2>
+
+          <p className="text-sm text-gray-600 mb-4">
+            This list guides **Donators** on our most urgent needs right now.
+          </p>
+
+          <div className="space-y-3">
+            {NGO_REQUIREMENTS.map((req, index) => (
+              <div
+                key={index}
+                className="p-3 border border-gray-200 rounded-lg bg-red-50 hover:bg-red-100 transition duration-150"
+              >
+                <p className="font-semibold text-gray-800">{req.name}</p>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-sm text-gray-600">
+                    Quantity Needed: {req.quantity}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-bold ${getStatusColor(
+                      req.status
+                    )}`}
+                  >
+                    {req.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Column 2 & 3: PENDING DONATIONS LIST */}
+        <div className="lg:col-span-2 p-6 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel space-y-4">
+          <h2 className="text-2xl font-bold text-gray-700 flex items-center border-b pb-3 mb-4">
+            <ClipboardList size={24} className="mr-3" />
+            Available Donations to Accept ({allAvailableItems.length})
+          </h2>
+
+          <p className="text-sm text-gray-600 mb-4">
+            Review items submitted by **Donators**. Click "Accept" to confirm
+            receipt or review details.
+          </p>
+
+          {allAvailableItems.length === 0 ? (
+            <div className="text-center p-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+              <Info size={40} className="mx-auto text-gray-400 mb-3" />
+              <p className="text-lg font-semibold text-gray-700">
+                No Pending Donations.
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                All inventory has been processed or none have been submitted
+                yet.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {allAvailableItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg shadow-sm bg-white"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div
+                      className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                        item.type ? "bg-green-100" : "bg-gray-100"
+                      }`}
+                    >
+                      {item.type
+                        ? getFoodIcon(item.type)
+                        : getCategoryIcon(item.category)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">{item.name}</p>
+                      <p className="text-xs text-gray-500">
+                        **Donator**: {item.donatorName} &bull; Type:{" "}
+                        {item.category || item.type}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setCurrentPage("detail");
+                      }}
+                      className="px-3 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded-full hover:bg-gray-100 transition duration-150"
+                    >
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => handleAcceptDonation(item.id, item.name)}
+                      className="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition duration-150 flex items-center"
+                    >
+                      Accept <ArrowRight size={14} className="ml-1" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Add Item Page Component (General Products)
+ * This is the primary donation form for Individual Donators.
+ */
 const AddItemPage = ({
   setCurrentPage,
   handleAddItem,
   inventory,
   currentUser,
 }) => {
-  // Auto-fill donor details if the user is logged in
-  const initialDonorDetails = {
-    donorName: currentUser ? currentUser.name : "",
-    donorAddress: currentUser ? currentUser.address : "",
-    donorLocation: currentUser ? currentUser.location : "",
+  // Auto-fill donator details if the user is logged in
+  const initialDonatorDetails = {
+    donatorName: currentUser?.name || "",
+    donatorAddress: currentUser?.address || "",
+    donatorLocation: currentUser?.location || "",
   };
 
   const [newItem, setNewItem] = useState({
     name: "",
-    category: categories[1], // Skip 'All'
+    category: categories[1],
     condition: CONDITIONS[0],
-    description: "", // Capture description for display on card
-    details: "", // Capture details for display on detail page
+    description: "",
+    details: "",
     picture: null,
-    // DONOR FIELDS (Initialized with currentUser details)
-    ...initialDonorDetails,
+    ...initialDonatorDetails,
   });
 
   const [verificationStatus, setVerificationStatus] = useState("idle");
   const [message, setMessage] = useState("");
-  const [duplicateAlert, setDuplicateAlert] = useState(null); // Holds best match item if duplicate is found
+  const [duplicateAlert, setDuplicateAlert] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "picture") {
       const file = files[0];
       setNewItem((prev) => ({ ...prev, [name]: file }));
-      setVerificationStatus("idle"); // Reset verification on new file selection
+      setVerificationStatus("idle");
     } else {
       setNewItem((prev) => ({ ...prev, [name]: value }));
     }
@@ -644,7 +1897,6 @@ const AddItemPage = ({
    */
   const verifyPicture = async () => {
     if (!newItem.picture) {
-      setVerificationStatus("error");
       setMessage("Please upload a file before attempting verification.");
       return;
     }
@@ -656,7 +1908,7 @@ const AddItemPage = ({
 
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    if (newItem.picture.name.includes("test_fail")) {
+    if (newItem.picture && newItem.picture.name.includes("test_fail")) {
       setVerificationStatus("error");
       setMessage(
         "Verification failed. Image quality is too low or content is inappropriate."
@@ -667,21 +1919,31 @@ const AddItemPage = ({
     }
   };
 
-  const finalizeSubmission = () => {
+  const finalizeSubmission = async () => {
     const itemToAdd = {
-      ...newItem,
-      id: Date.now(),
-      price: 0,
+      id: "p" + Date.now(), // Mock ID
+      name: newItem.name,
+      category: newItem.category,
+      condition: newItem.condition,
       description: newItem.description || "No description provided.",
       details: newItem.details || "No additional details provided.",
+      donatorName: newItem.donatorName, // UPDATED
+      donatorAddress: newItem.donatorAddress, // UPDATED
+      donatorLocation: newItem.donatorLocation, // UPDATED
+      timestamp: Date.now(),
     };
 
-    handleAddItem(itemToAdd);
+    try {
+      await handleAddItem(itemToAdd); // Adds to local state
+      setMessage(
+        `Item "${newItem.name}" submitted successfully and added to inventory!`
+      );
+    } catch (error) {
+      setMessage(`Error saving item: ${error.message}`);
+      return;
+    }
 
-    setMessage(
-      `Item "${newItem.name}" submitted successfully and added to inventory!`
-    );
-    setDuplicateAlert(null); // Close the alert if it was open
+    setDuplicateAlert(null);
 
     setTimeout(() => {
       setCurrentPage("home");
@@ -697,15 +1959,20 @@ const AddItemPage = ({
       return;
     }
 
-    // 1. FUZZY DUPLICATE CHECK
-    const duplicateResult = checkFuzzyDuplicates(newItem.name, inventory);
+    // 1. FUZZY DUPLICATE CHECK (only against non-food items)
+    const nonFoodInventory = inventory.filter(
+      (i) => !(i.type && i.storageLocation)
+    );
+    const duplicateResult = checkFuzzyDuplicates(
+      newItem.name,
+      nonFoodInventory
+    );
 
     if (duplicateResult) {
       setDuplicateAlert(duplicateResult.item);
       setMessage(
         "Warning: A similar item was found in the inventory. Please confirm submission."
       );
-      // Prevent immediate submission. User must click "Submit Anyway" in the modal.
       return;
     }
 
@@ -720,7 +1987,7 @@ const AddItemPage = ({
   const isSuccess = verificationStatus === "success";
   const isError = verificationStatus === "error";
 
-  // Button content based on status
+  // Button content and classes
   let buttonContent;
   let buttonClasses;
 
@@ -816,7 +2083,7 @@ const AddItemPage = ({
               </button>
               <button
                 type="button"
-                onClick={finalizeSubmission} // Bypass duplicate check this time
+                onClick={finalizeSubmission}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150"
               >
                 Submit Anyway
@@ -836,7 +2103,7 @@ const AddItemPage = ({
           <span className="font-semibold text-lg">Back to Home</span>
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
-          Donate Item
+          Submit Donation (Donator)
         </h1>
       </header>
 
@@ -856,29 +2123,28 @@ const AddItemPage = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* --- Donor Details Section --- */}
+          {/* --- Donator Details Section --- */}
           <h2 className="text-xl font-bold text-gray-700 pt-4 border-t border-gray-200">
-            Donor Information
+            Donator Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Donor Name */}
+            {/* Donator Name */}
             <div>
               <label
-                htmlFor="donorName"
+                htmlFor="donatorName"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Donor Name
+                Donator Name
               </label>
               <input
                 type="text"
-                name="donorName"
-                id="donorName"
-                value={newItem.donorName}
+                name="donatorName"
+                id="donatorName"
+                value={newItem.donatorName}
                 onChange={handleChange}
                 required
                 placeholder="Full Name"
-                // If logged in, field is read-only and styled differently
-                readOnly={Boolean(currentUser)}
+                readOnly={currentUser}
                 className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
                   currentUser
                     ? "bg-gray-100 border-gray-300"
@@ -886,23 +2152,23 @@ const AddItemPage = ({
                 }`}
               />
             </div>
-            {/* Donor Location (City/State) */}
+            {/* Donator Location (City/State) */}
             <div>
               <label
-                htmlFor="donorLocation"
+                htmlFor="donatorLocation"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 City / State
               </label>
               <input
                 type="text"
-                name="donorLocation"
-                id="donorLocation"
-                value={newItem.donorLocation}
+                name="donatorLocation"
+                id="donatorLocation"
+                value={newItem.donatorLocation}
                 onChange={handleChange}
                 required
                 placeholder="City, State/Province"
-                readOnly={Boolean(currentUser)}
+                readOnly={currentUser}
                 className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
                   currentUser
                     ? "bg-gray-100 border-gray-300"
@@ -911,35 +2177,34 @@ const AddItemPage = ({
               />
             </div>
           </div>
-          {/* Donor Address */}
+          {/* Donator Address */}
           <div>
             <label
-              htmlFor="donorAddress"
+              htmlFor="donatorAddress"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Street Address
             </label>
             <input
               type="text"
-              name="donorAddress"
-              id="donorAddress"
-              value={newItem.donorAddress}
+              name="donatorAddress"
+              id="donatorAddress"
+              value={newItem.donatorAddress}
               onChange={handleChange}
               required
               placeholder="Street address, Apt, etc."
-              readOnly={Boolean(currentUser)}
+              readOnly={currentUser}
               className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
                 currentUser ? "bg-gray-100 border-gray-300" : "border-gray-300"
               }`}
             />
           </div>
-          {/* --- End Donor Details Section --- */}
+          {/* --- End Donator Details Section --- */}
 
           {/* --- Item Details Section --- */}
           <h2 className="text-xl font-bold text-gray-700 pt-4 border-t border-gray-200">
             Item Details
           </h2>
-
           {/* Item Name */}
           <div>
             <label
@@ -1064,7 +2329,7 @@ const AddItemPage = ({
                 type="button"
                 onClick={verifyPicture}
                 disabled={isPending || !newItem.picture}
-                className={`absolute bottom-3 right-3 z-10 flex items-center text-xs font-semibold px-3 py-1 rounded-full transition duration-150 shadow-md ${buttonClasses} ${
+                className={`absolute bottom-3 right-3 z-10 flex items-center text-xs font-semibold px-3 py-1 rounded-full transition duration-150 ${buttonClasses} ${
                   isPending || !newItem.picture ? "opacity-70" : ""
                 }`}
               >
@@ -1136,320 +2401,70 @@ const AddItemPage = ({
 };
 
 /**
- * Donor Login Page Component
+ * Add Food Item Page Component
  */
-const DonorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
-  const [userType, setUserType] = useState("individual"); // 'individual' or 'ngo'
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [location, setLocation] = useState("");
-  const [isIdVerified, setIsIdVerified] = useState(false);
+const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
+  // Auto-fill donator details if the user is logged in
+  const initialDonatorDetails = {
+    donatorName: currentUser?.name || "",
+    donatorAddress: currentUser?.address || "",
+    donatorLocation: currentUser?.location || "",
+  };
+
+  const [newFoodItem, setNewFoodItem] = useState({
+    name: "",
+    type: FOOD_TYPES[0],
+    quantity: 1,
+    expiryDate: "",
+    storageLocation: FOOD_STORAGE_OPTIONS[0],
+    specificLocation: "",
+    details: "",
+    ...initialDonatorDetails,
+  });
   const [message, setMessage] = useState("");
-  const [isPending, setIsPending] = useState(false);
 
-  const handleVerify = async () => {
-    if (!name || !email || !address || !location) {
-      setMessage("Please fill out all required fields.");
-      return;
-    }
-
-    setIsPending(true);
-    setMessage(
-      `Verifying ${
-        userType === "individual" ? "ID" : "NGO details"
-      } and address...`
-    );
-
-    // Simulate external verification process
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setIsPending(false);
-    setIsIdVerified(true);
-    setMessage("Verification successful! You can now access the form.");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewFoodItem((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isIdVerified) {
-      setMessage("Please verify your details before proceeding.");
+    setMessage("");
+
+    const itemToAdd = {
+      id: "f" + Date.now(), // Mock Food ID
+      name: newFoodItem.name,
+      type: newFoodItem.type,
+      quantity: parseInt(newFoodItem.quantity, 10),
+      expiryDate: newFoodItem.expiryDate,
+      storageLocation: newFoodItem.storageLocation,
+      specificLocation: newFoodItem.specificLocation,
+      details: newFoodItem.details || "No details provided.",
+      donatorName: newFoodItem.donatorName, // UPDATED
+      donatorAddress: newFoodItem.donatorAddress, // UPDATED
+      donatorLocation: newFoodItem.donatorLocation, // UPDATED
+      timestamp: Date.now(),
+      available: parseInt(newFoodItem.quantity, 10), // Mock available count
+    };
+
+    try {
+      await handleAddItem(itemToAdd);
+      setMessage(`Food item "${newFoodItem.name}" submitted successfully!`);
+    } catch (error) {
+      setMessage(`Error saving food item: ${error.message}`);
       return;
     }
 
-    // Mock login: Set the user and redirect
-    const user = {
-      name,
-      email,
-      address,
-      location,
-      userType, // Store the type
-      profilePicture:
-        "https://placehold.co/100x100/4B5563/FFF?text=" +
-        name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .substring(0, 2)
-          .toUpperCase(),
-    };
-    setCurrentUser(user);
-    setLoggedIn(true);
-    setCurrentPage("add"); // Direct to donation form after successful login
+    setTimeout(() => {
+      setCurrentPage("home");
+      setMessage("");
+    }, 1500);
   };
 
-  // UI variables based on user type
-  const nameLabel =
-    userType === "individual" ? "Full Name" : "Organization Name";
-  const namePlaceholder =
-    userType === "individual" ? "John Doe" : "Example Foundation";
-  const verifyButtonText =
-    userType === "individual" ? "Verify ID & Proceed" : "Verify NGO Status";
-  const verifyIcon =
-    userType === "individual" ? (
-      <User size={16} className="mr-2" />
-    ) : (
-      <Building size={16} className="mr-2" />
-    );
-
   return (
-    <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
-      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
-        <button
-          onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
-        >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Home</span>
-        </button>
-        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase text-center">
-          Donor Login
-        </h1>
-      </header>
-
-      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500">
-        {/* --- User Type Selection --- */}
-        <div className="flex space-x-3 mb-6">
-          <button
-            onClick={() => {
-              setUserType("individual");
-              setIsIdVerified(false);
-              setMessage("");
-            }}
-            className={`flex-1 py-3 px-4 rounded-lg shadow-md font-semibold text-sm transition duration-150 ${
-              userType === "individual"
-                ? "bg-gray-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <User size={16} className="mr-2 inline" /> Donor / Individual
-          </button>
-          <button
-            onClick={() => {
-              setUserType("ngo");
-              setIsIdVerified(false);
-              setMessage("");
-            }}
-            className={`flex-1 py-3 px-4 rounded-lg shadow-md font-semibold text-sm transition duration-150 ${
-              userType === "ngo"
-                ? "bg-gray-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <Building size={16} className="mr-2 inline" /> NGO / Organization
-          </button>
-        </div>
-        {/* --- End User Type Selection --- */}
-
-        {message && (
-          <div
-            className={`px-4 py-3 rounded relative mb-4 border ${
-              isIdVerified
-                ? "bg-green-100 border-green-400 text-green-700"
-                : "bg-red-100 border-red-400 text-red-700"
-            }`}
-            role="alert"
-          >
-            {message}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          {/* Name/Organization Name */}
-          <div>
-            <label
-              htmlFor="loginName"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              {nameLabel}
-            </label>
-            <input
-              type="text"
-              id="loginName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder={namePlaceholder}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
-            />
-          </div>
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="loginEmail"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="loginEmail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="name@example.com"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
-            />
-          </div>
-          {/* Address */}
-          <div>
-            <label
-              htmlFor="loginAddress"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Address
-            </label>
-            <input
-              type="text"
-              id="loginAddress"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-              placeholder="123 Main St"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
-            />
-          </div>
-          {/* Location */}
-          <div>
-            <label
-              htmlFor="loginLocation"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              City / State
-            </label>
-            <input
-              type="text"
-              id="loginLocation"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              placeholder="Austin, TX"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
-            />
-          </div>
-
-          {/* Verification Button */}
-          <button
-            type="button"
-            onClick={handleVerify}
-            disabled={isPending || isIdVerified}
-            className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white transition duration-150 ${
-              isIdVerified
-                ? "bg-green-600"
-                : isPending
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500"
-            }`}
-          >
-            {isPending ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Verifying Details...
-              </>
-            ) : isIdVerified ? (
-              <>
-                <CheckCircle size={16} className="mr-2" />
-                Details Verified
-              </>
-            ) : (
-              <>
-                {verifyIcon}
-                {verifyButtonText}
-              </>
-            )}
-          </button>
-
-          {/* Login Button (Submit) */}
-          <button
-            type="submit"
-            disabled={!isIdVerified}
-            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white transition duration-150 ${
-              !isIdVerified
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500"
-            }`}
-          >
-            Access Donation Form
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-/**
- * Donor Profile Page Component
- */
-const DonorProfilePage = ({
-  currentUser,
-  setCurrentPage,
-  setLoggedIn,
-  setCurrentUser,
-}) => {
-  if (!currentUser) {
-    setCurrentPage("home"); // Redirect if no user is logged in
-    return null;
-  }
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setLoggedIn(false);
-    setCurrentPage("home");
-  };
-
-  // Mock profile picture URL (using initials)
-  const initials = currentUser.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-  const profilePicUrl = `https://placehold.co/150x150/4B5563/FFFFFF?text=${initials}`;
-
-  // Helper for profile details based on user type
-  const nameLabel =
-    currentUser.userType === "individual" ? "Donor Name" : "Organization Name";
-
-  return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 content-panel">
-      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
         <button
           onClick={() => setCurrentPage("home")}
           className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
@@ -1458,434 +2473,325 @@ const DonorProfilePage = ({
           <span className="font-semibold text-lg">Back to Home</span>
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
-          My Profile
+          Donate Food Item (Donator)
         </h1>
       </header>
 
-      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 space-y-8">
-        {/* Profile Picture Section */}
-        <div className="flex flex-col items-center border-b border-gray-200 pb-6">
-          <img
-            src={profilePicUrl}
-            alt="Profile Picture"
-            className="w-36 h-36 rounded-full object-cover border-4 border-gray-300 shadow-xl"
-          />
-          <h2 className="text-4xl font-bold text-gray-800 mt-4">
-            {currentUser.name}
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
+        {message && (
+          <div
+            className={`px-4 py-3 rounded relative mb-4 border bg-green-100 border-green-400 text-green-700`}
+            role="alert"
+          >
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Donator Details Section */}
+          <h2 className="text-xl font-bold text-gray-700 pt-4 border-t border-gray-200">
+            Donator Information
           </h2>
-          <p className="text-gray-500">{currentUser.email}</p>
-
-          {/* Mock Profile Picture Uploader */}
-          <div className="mt-4 flex items-center space-x-2 text-sm text-gray-600">
-            <Image size={16} className="text-gray-500" />
-            <span>Upload/Change Picture (Mock)</span>
-          </div>
-        </div>
-
-        {/* Details Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-          {/* Personal Details */}
-          <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-700 border-b pb-2 mb-3 flex items-center">
-              <User size={20} className="mr-2 text-gray-500" /> Personal Details
-            </h3>
-            <div className="text-gray-700">
-              <span className="font-semibold block">{nameLabel}:</span>
-              <span className="text-gray-600">{currentUser.name}</span>
-            </div>
-            <div className="text-gray-700">
-              <span className="font-semibold block">User Type:</span>
-              <span className="text-gray-600 capitalize">
-                {currentUser.userType}
-              </span>
-            </div>
-            <div className="text-gray-700">
-              <span className="font-semibold block">Email:</span>
-              <span className="text-gray-600">{currentUser.email}</span>
-            </div>
-            <div className="text-gray-700">
-              <span className="font-semibold block">Verification Status:</span>
-              <span className="text-green-600 font-bold flex items-center">
-                <CheckCircle size={16} className="mr-1" /> Verified Donor
-              </span>
-            </div>
-          </div>
-
-          {/* Contact Details */}
-          <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-700 border-b pb-2 mb-3 flex items-center">
-              <MapPin size={20} className="mr-2 text-gray-500" /> Contact &
-              Location
-            </h3>
-            <div className="text-gray-700">
-              <span className="font-semibold block">Address:</span>
-              <span className="text-gray-600">{currentUser.address}</span>
-            </div>
-            <div className="text-gray-700">
-              <span className="font-semibold block">Location:</span>
-              <span className="text-gray-600">{currentUser.location}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="pt-6 border-t border-gray-200 flex justify-between">
-          <button
-            onClick={() => alert("Simulating Edit Profile...")}
-            className="flex items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
-          >
-            <Settings size={18} className="mr-2" />
-            Edit Profile
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition duration-150"
-          >
-            <LogOut size={18} className="mr-2" />
-            Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * Chatbot Component (omitted for brevity)
- */
-const Chatbot = () => {
-  // ... (Chatbot implementation remains unchanged)
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      sender: "Bot",
-      text: "Hello! I am your Inventory Assistant. How can I help you search or manage your stock today?",
-    },
-  ]);
-  const [input, setInput] = useState("");
-
-  const handleSend = () => {
-    if (input.trim() === "") return;
-
-    const newMessage = { sender: "User", text: input.trim() };
-    setMessages([...messages, newMessage]);
-    setInput("");
-
-    // Mock Bot Response Logic
-    setTimeout(() => {
-      const botResponse = {
-        sender: "Bot",
-        text: `Thanks for asking about "${input.trim()}." I can look that up for you!`,
-      };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
-  };
-
-  return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Chat Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-2xl flex items-center justify-center transition duration-300 transform hover:scale-105"
-        title={isOpen ? "Close Chat" : "Open Chat"}
-      >
-        <MessageSquare size={24} />
-      </button>
-
-      {/* Chat Window */}
-      {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 h-96 bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
-          {/* Chat Header */}
-          <div className="bg-gray-600 p-3 text-white font-bold flex justify-between items-center shadow-md">
-            Inventory Support Chat
-            <span className="text-xs bg-green-400 px-2 py-0.5 rounded-full font-medium">
-              Online
-            </span>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  msg.sender === "User" ? "justify-end" : "justify-start"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="donatorName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Donator Name
+              </label>
+              <input
+                type="text"
+                name="donatorName"
+                id="donatorName"
+                value={newFoodItem.donatorName}
+                onChange={handleChange}
+                required
+                placeholder="Full Name"
+                readOnly={currentUser}
+                className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                  currentUser
+                    ? "bg-gray-100 border-gray-300"
+                    : "border-gray-300"
                 }`}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="donatorLocation"
+                className="block text-sm font-medium text-gray-700 mb-1"
               >
-                <div
-                  className={`max-w-[75%] px-3 py-2 rounded-xl text-sm shadow-sm ${
-                    msg.sender === "User"
-                      ? "bg-gray-500 text-white rounded-br-none"
-                      : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
-                  }`}
-                >
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Chat Input */}
-          <div className="p-3 border-t border-gray-200 bg-white">
-            <div className="flex items-center">
+                City / State
+              </label>
               <input
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Type your question..."
-                className="flex-1 p-2 border border-gray-300 rounded-full focus:ring-gray-500 focus:border-gray-500 text-sm"
+                name="donatorLocation"
+                id="donatorLocation"
+                value={newFoodItem.donatorLocation}
+                onChange={handleChange}
+                required
+                placeholder="City, State/Province"
+                readOnly={currentUser}
+                className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                  currentUser
+                    ? "bg-gray-100 border-gray-300"
+                    : "border-gray-300"
+                }`}
               />
-              <button
-                onClick={handleSend}
-                className="ml-2 w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-full flex items-center justify-center transition duration-150"
-                title="Send"
-              >
-                <Send size={16} />
-              </button>
             </div>
           </div>
-        </div>
-      )}
+          <div>
+            <label
+              htmlFor="donatorAddress"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Street Address
+            </label>
+            <input
+              type="text"
+              name="donatorAddress"
+              id="donatorAddress"
+              value={newFoodItem.donatorAddress}
+              onChange={handleChange}
+              required
+              placeholder="Street address, Apt, etc."
+              readOnly={currentUser}
+              className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                currentUser ? "bg-gray-100 border-gray-300" : "border-gray-300"
+              }`}
+            />
+          </div>
+
+          {/* Food Details Section */}
+          <h2 className="text-xl font-bold text-gray-700 pt-4 border-t border-gray-200">
+            Food Item Details
+          </h2>
+
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Food Item Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              value={newFoodItem.name}
+              onChange={handleChange}
+              required
+              placeholder="e.g., Canned Black Beans"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Type */}
+            <div>
+              <label
+                htmlFor="type"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Food Type
+              </label>
+              <select
+                name="type"
+                id="type"
+                value={newFoodItem.type}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+              >
+                {FOOD_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Quantity */}
+            <div>
+              <label
+                htmlFor="quantity"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Quantity (Units)
+              </label>
+              <input
+                type="number"
+                name="quantity"
+                id="quantity"
+                value={newFoodItem.quantity}
+                onChange={handleChange}
+                required
+                min="1"
+                placeholder="e.g., 12"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+              />
+            </div>
+            {/* Expiry Date */}
+            <div>
+              <label
+                htmlFor="expiryDate"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Expiry Date
+              </label>
+              <input
+                type="date"
+                name="expiryDate"
+                id="expiryDate"
+                value={newFoodItem.expiryDate}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+              />
+            </div>
+          </div>
+
+          {/* Storage Location (General Type) */}
+          <div>
+            <label
+              htmlFor="storageLocation"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              General Storage Type
+            </label>
+            <select
+              name="storageLocation"
+              id="storageLocation"
+              value={newFoodItem.storageLocation}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+            >
+              {FOOD_STORAGE_OPTIONS.map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Specific Location (NEW FIELD) */}
+          <div>
+            <label
+              htmlFor="specificLocation"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Specific Location (e.g., Shelf/Aisle/Fridge)
+            </label>
+            <input
+              type="text"
+              name="specificLocation"
+              id="specificLocation"
+              value={newFoodItem.specificLocation}
+              onChange={handleChange}
+              required
+              placeholder="Aisle 3, Shelf B"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+            />
+          </div>
+
+          {/* Details */}
+          <div>
+            <label
+              htmlFor="details"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Notes/Details (e.g., Brand, package size)
+            </label>
+            <textarea
+              name="details"
+              id="details"
+              value={newFoodItem.details}
+              onChange={handleChange}
+              placeholder="Add specific brand or size information."
+              rows="2"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white transition duration-150 bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            <Heart size={20} className="mr-2" />
+            Submit Food Donation
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
 
+// ====================================================================
+// SECTION 6: MAIN APP COMPONENT
+// ====================================================================
+
 /**
- * Home View Component
- * The original inventory search and display page.
+ * Splash Screen Component
  */
-const HomeView = ({
-  searchTerm,
-  setSearchTerm,
-  selectedCategory,
-  setSelectedCategory,
-  filteredItems,
-  loading,
-  categories,
-  setCurrentPage,
-  setSelectedItem,
-  isLoggedIn, // NEW PROP
-  currentUser, // NEW PROP
-}) => {
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
+const SplashScreen = ({ gradientStyle }) => {
+  const TAGLINE = "Be the light in their darkest chapter";
 
-  // Function to handle clicking an ItemCard
-  const handleItemClick = (item) => {
-    setSelectedItem(item);
-    setCurrentPage("detail");
-  };
+  // GSAP animation for the title (Pulse) and tagline (Typing)
+  useEffect(() => {
+    if (window.gsap) {
+      const tl = window.gsap.timeline();
 
-  const handleDonateClick = () => {
-    if (isLoggedIn) {
-      setCurrentPage("add");
-    } else {
-      setCurrentPage("login");
+      // 1. Home Title Animation (Pulse)
+      tl.to("#splash-title", {
+        opacity: 0.2,
+        scale: 0.95,
+        duration: 0.75,
+        ease: "power2.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+
+      // 2. Tagline Word-Typing Effect
+      window.gsap.set(".tagline-char", { opacity: 0, y: 5 });
+
+      window.gsap.to(".tagline-char", {
+        opacity: 1,
+        y: 0,
+        stagger: 0.03,
+        duration: 0.05,
+        ease: "none",
+        delay: 0.5,
+      });
     }
+  }, []);
+
+  const splitTagline = (text) => {
+    return text.split("").map((char, index) => (
+      <span
+        key={index}
+        className="tagline-char"
+        style={{ display: "inline-block" }}
+      >
+        {char === " " ? "\u00A0" : char}
+      </span>
+    ));
   };
 
   return (
-    <>
-      {/* Top Bar for Header and Add Item Button */}
-      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
-        <h1 className="text-5xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
-          Home
-        </h1>
-
-        <div className="flex items-center space-x-3">
-          {/* User Profile / Login Button */}
-          {isLoggedIn ? (
-            <>
-              <button
-                onClick={() => setCurrentPage("profile")}
-                className="flex items-center justify-center p-2 rounded-full border border-gray-300 shadow-md bg-white hover:bg-gray-50 transition duration-150"
-                title="My Profile"
-              >
-                <img
-                  src={currentUser.profilePicture}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full"
-                />
-              </button>
-              <button
-                onClick={handleDonateClick}
-                className="flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 transform hover:scale-105"
-              >
-                <Heart size={20} className="mr-2" />
-                Donate Item
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setCurrentPage("login")}
-              className="flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 transform hover:scale-105"
-            >
-              <LogIn size={20} className="mr-2" />
-              Donor Login
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Main Layout: TWO-COLUMN Layout on large screens */}
-      <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
-        {/* Column 1 (Left): Search, Category Filter, AND FOOD ITEMS */}
-        <div className="lg:w-1/3 w-full space-y-6 h-fit lg:sticky top-6">
-          {/* 1. Search Box and Category Filter Panel */}
-          <div className="p-5 bg-white/90 rounded-xl shadow-xl border-t-4 border-gray-500 content-panel">
-            {/* Search & Filter Title with Background */}
-            <h2 className="text-xl font-bold text-gray-800 mb-5 p-2 bg-gray-100 rounded-lg flex items-center">
-              <Search className="mr-2 text-gray-500" size={20} />
-              Search & Filter
-            </h2>
-
-            {/* Search Input */}
-            <div className="relative mb-6">
-              <input
-                type="text"
-                placeholder="Search by name, category, or keyword..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="w-full pl-9 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-150 text-sm text-gray-700"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-            </div>
-
-            {/* Category Filter Buttons */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              {/* Filter by Category Title with Background */}
-              <h3 className="text-base font-bold text-gray-800 mb-3 p-1 bg-gray-100 rounded-md flex items-center">
-                <Tag size={16} className="mr-2 text-gray-500" />
-                Filter by Category
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {categories
-                  .filter((c) => c !== "All")
-                  .map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition duration-150 ${
-                        selectedCategory === cat
-                          ? "bg-gray-600 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-800 hover:scale-[1.03] transform"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                <button
-                  onClick={() => setSelectedCategory("All")}
-                  className={`px-3 py-1 text-xs font-medium rounded-full transition duration-150 ${
-                    selectedCategory === "All"
-                      ? "bg-gray-600 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-800 hover:scale-[1.03] transform"
-                  }`}
-                >
-                  All
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Available Food Items Window (RESTORED) */}
-          <div className="p-5 bg-white/90 rounded-xl shadow-xl border-t-4 border-gray-500 content-panel">
-            <h3 className="xl font-bold text-gray-800 mb-5 p-2 bg-gray-100 rounded-lg flex items-center">
-              <Utensils size={20} className="mr-2 text-gray-500" />
-              Available Food Items
-            </h3>
-            <div className="space-y-3">
-              {MOCK_FOOD_ITEMS.map((food, index) => (
-                <FoodCard key={index} food={food} />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Column 2 (Right): Main Item Window (Products) */}
-        <div className="lg:w-2/3 w-full p-5 bg-white/90 rounded-xl shadow-xl border-t-4 border-gray-500 content-panel">
-          {/* Combined Heading with Category and Count */}
-          <div className="flex justify-between items-baseline mb-5 border-b pb-2">
-            <h2 className="text-xl font-bold text-gray-800">Available Items</h2>
-            <div className="text-right">
-              <span className="text-lg font-extrabold text-gray-600">
-                {filteredItems.length}
-              </span>
-              <span className="text-gray-500 ml-1 text-sm">item(s) found</span>
-              <p className="text-xs text-gray-500 mt-1">
-                Showing results for:{" "}
-                <span className="font-semibold text-gray-600">
-                  {selectedCategory}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          {/* Loading/Status Indicators */}
-          {loading && (
-            <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg mb-4">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span className="text-gray-600 font-medium text-sm">
-                Searching inventory...
-              </span>
-            </div>
-          )}
-
-          {/* Results Grid */}
-          {!loading && (
-            <>
-              {filteredItems.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {" "}
-                  {/* Reduced gap */}
-                  {filteredItems.map((item) => (
-                    <ItemCard
-                      key={item.id}
-                      item={item}
-                      onClick={handleItemClick}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                  <Search size={40} className="mx-auto text-gray-400 mb-3" />
-                  <p className="text-lg font-semibold text-gray-700">
-                    No items match your criteria.
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Try adjusting the search term or category filter.
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+    <div
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen font-sans`}
+      style={gradientStyle}
+    >
+      <h1
+        id="splash-title"
+        className="text-6xl font-extrabold text-white tracking-widest uppercase drop-shadow-xl mb-4"
+      >
+        Home
+      </h1>
+      <div className="text-xl font-medium text-white drop-shadow-lg flex flex-wrap justify-center">
+        {splitTagline(TAGLINE)}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -1894,25 +2800,35 @@ const HomeView = ({
  * Handles state, searching, and layout.
  */
 const App = () => {
-  // 1. CONVERTED TO STATE
-  const [inventory, setInventory] = useState(BASE_MOCK_INVENTORY);
+  // --- LOCAL STATE RESTORATION ---
+  const [inventory, setInventory] = useState(MOCK_INVENTORY);
+  const [foodItems, setFoodItems] = useState(MOCK_FOOD_ITEMS);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [filteredItems, setFilteredItems] = useState(BASE_MOCK_INVENTORY);
+  const [filteredItems, setFilteredItems] = useState(MOCK_INVENTORY);
   const [loading, setLoading] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // --- NEW AUTHENTICATION STATES ---
+  // --- AUTHENTICATION STATES ---
   const [isLoggedIn, setLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null); // Stores donor name, email, address, location, profilePicture
+  // Mock user now only stores details provided by the mock login pages
+  // Note: userType 'individual' is now 'Donator'
+  const [currentUser, setCurrentUser] = useState(null);
+  const isAuthReady = true;
 
-  // 2. NEW HANDLER FUNCTION
-  const handleAddItem = (newItem) => {
-    // Add the new item to the inventory state
-    setInventory((prevInventory) => [newItem, ...prevInventory]);
+  // --- LOCAL ADD ITEM HANDLER (REPLACING FIREBASE) ---
+  const handleAddItem = async (newItem) => {
+    if (newItem.type && newItem.storageLocation) {
+      // Food item: Add to foodItems state
+      setFoodItems((prev) => [newItem, ...prev]);
+    } else {
+      // General item: Add to inventory state
+      setInventory((prev) => [newItem, ...prev]);
+    }
+    return Promise.resolve();
   };
 
   // Effect to hide the splash screen after 2 seconds
@@ -1926,36 +2842,36 @@ const App = () => {
 
   // Use GSAP for staggered content entry when the main app loads
   useEffect(() => {
-    // Check for window.gsap to ensure the library is loaded
     if (!showSplash && window.gsap) {
-      // Initialize GSAP timeline
       const tl = window.gsap.timeline({
         defaults: { duration: 0.5, ease: "power2.out" },
       });
 
-      // 1. Target the top header and move it in from the top
       tl.from("header.content-panel", { y: -30, opacity: 0 });
 
-      // 2. Target the main content panels (.content-panel)
       tl.from(
         ".content-panel",
         {
           y: 20,
           opacity: 0,
           stagger: 0.1,
-          scale: 0.98,
+          duration: 0.05,
+          ease: "none",
+          delay: 0.5,
         },
         "<0.1"
       );
     }
   }, [showSplash]);
 
-  // Use a derived state (useEffect) to handle filtering logic whenever the search term, category, OR INVENTORY changes.
+  // Effect to handle filtering logic whenever the search term, category, OR INVENTORY changes.
   useEffect(() => {
-    // Basic debounce simulation for a smoother feel
     setLoading(true);
     const delaySearch = setTimeout(() => {
-      let results = inventory; // Use state here
+      // Start with only non-food items for the main grid
+      let results = inventory.filter(
+        (item) => !(item.type && item.storageLocation)
+      );
 
       // 1. Filter by Search Term
       if (searchTerm.trim()) {
@@ -1963,8 +2879,8 @@ const App = () => {
         results = results.filter(
           (item) =>
             item.name.toLowerCase().includes(lowerCaseSearch) ||
-            item.description.toLowerCase().includes(lowerCaseSearch) ||
-            item.category.toLowerCase().includes(lowerCaseSearch)
+            item.description?.toLowerCase().includes(lowerCaseSearch) ||
+            item.category?.toLowerCase().includes(lowerCaseSearch)
         );
       }
 
@@ -1975,14 +2891,12 @@ const App = () => {
 
       setFilteredItems(results);
       setLoading(false);
-    }, 300); // 300ms delay
+    }, 300); // 300ms debounce delay
 
-    // Cleanup function to clear the timeout if the effect runs again
     return () => clearTimeout(delaySearch);
-  }, [searchTerm, selectedCategory, inventory]); // IMPORTANT: Add inventory to dependencies
+  }, [searchTerm, selectedCategory, inventory]);
 
   const gradientStyle = {
-    // Current gradient reflecting the light green/gray to gray/darker gray theme
     background:
       "linear-gradient(159deg, rgba(223, 237, 227, 1) 14%, rgba(100, 100, 100, 1) 43%, rgba(150, 150, 150, 1) 80%)",
   };
@@ -1990,11 +2904,51 @@ const App = () => {
   // Conditional Rendering of Pages
   let content;
 
-  if (showSplash) {
-    content = <SplashScreen gradientStyle={gradientStyle} />;
-  } else if (currentPage === "login") {
+  if (showSplash || !isAuthReady) {
     content = (
-      <DonorLoginPage
+      <div
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen font-sans`}
+        style={gradientStyle}
+      >
+        <h1 className="text-6xl font-extrabold text-white tracking-widest uppercase drop-shadow-xl mb-4">
+          Loading...
+        </h1>
+        <svg
+          className="animate-spin h-8 w-8 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+    );
+  } else if (currentPage === "selectLogin") {
+    content = <SelectLoginPage setCurrentPage={setCurrentPage} />;
+  } else if (currentPage === "donatorLogin") {
+    // UPDATED ROUTE
+    content = (
+      <DonatorLoginPage
+        setCurrentPage={setCurrentPage}
+        setLoggedIn={setLoggedIn}
+        setCurrentUser={setCurrentUser}
+      />
+    );
+  } else if (currentPage === "ngoLogin") {
+    content = (
+      <NgoLoginPage
         setCurrentPage={setCurrentPage}
         setLoggedIn={setLoggedIn}
         setCurrentUser={setCurrentUser}
@@ -2002,27 +2956,93 @@ const App = () => {
     );
   } else if (currentPage === "profile") {
     content = (
-      <DonorProfilePage
+      <DonatorProfilePage
         currentUser={currentUser}
         setCurrentPage={setCurrentPage}
         setLoggedIn={setLoggedIn}
         setCurrentUser={setCurrentUser}
       />
     );
-  } else if (currentPage === "add") {
-    // Pass inventory and currentUser to AddItemPage
+  } else if (currentPage === "ngoDonation") {
+    // NGO Hub
     content = (
-      <AddItemPage
+      <NgoDonationView
         setCurrentPage={setCurrentPage}
-        handleAddItem={handleAddItem}
         inventory={inventory}
-        currentUser={currentUser}
+        foodItems={foodItems}
+        setSelectedItem={setSelectedItem}
       />
     );
+  } else if (currentPage === "add") {
+    // General Item Add (Donator only)
+    // Check for 'individual' userType before rendering item form
+    if (currentUser?.userType === "individual") {
+      content = (
+        <AddItemPage
+          setCurrentPage={setCurrentPage}
+          handleAddItem={handleAddItem}
+          inventory={inventory}
+          currentUser={currentUser}
+        />
+      );
+    } else {
+      content = (
+        <HomeView
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          filteredItems={filteredItems}
+          loading={loading}
+          setCurrentPage={setCurrentPage}
+          setSelectedItem={setSelectedItem}
+          isLoggedIn={isLoggedIn}
+          currentUser={currentUser}
+          foodItems={foodItems}
+        />
+      );
+    }
+  } else if (currentPage === "addFood") {
+    // Food Item Add (Donator only)
+    // Check for 'individual' userType before rendering food form
+    if (currentUser?.userType === "individual") {
+      content = (
+        <AddFoodItemPage
+          setCurrentPage={setCurrentPage}
+          handleAddItem={handleAddItem}
+          currentUser={currentUser}
+        />
+      );
+    } else {
+      content = (
+        <HomeView
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          filteredItems={filteredItems}
+          loading={loading}
+          setCurrentPage={setCurrentPage}
+          setSelectedItem={setSelectedItem}
+          isLoggedIn={isLoggedIn}
+          currentUser={currentUser}
+          foodItems={foodItems}
+        />
+      );
+    }
   } else if (currentPage === "detail" && selectedItem) {
-    content = (
-      <ItemDetailPage item={selectedItem} setCurrentPage={setCurrentPage} />
-    );
+    if (selectedItem.type && selectedItem.storageLocation) {
+      content = (
+        <FoodItemDetailPage
+          item={selectedItem}
+          setCurrentPage={setCurrentPage}
+        />
+      );
+    } else {
+      content = (
+        <ItemDetailPage item={selectedItem} setCurrentPage={setCurrentPage} />
+      );
+    }
   } else {
     content = (
       <HomeView
@@ -2032,11 +3052,11 @@ const App = () => {
         setSelectedCategory={setSelectedCategory}
         filteredItems={filteredItems}
         loading={loading}
-        categories={categories}
         setCurrentPage={setCurrentPage}
         setSelectedItem={setSelectedItem}
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
+        foodItems={foodItems}
       />
     );
   }
@@ -2045,7 +3065,11 @@ const App = () => {
     <>
       {/* Load GSAP library for animations */}
       <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-      <div>{content}</div>
+      {/* Load Tailwind CSS */}
+      <script src="https://cdn.tailwindcss.com"></script>
+      <div className={`min-h-screen font-sans`} style={gradientStyle}>
+        {content}
+      </div>
 
       {/* Floating Chatbot at Bottom Right */}
       {!showSplash && <Chatbot />}
