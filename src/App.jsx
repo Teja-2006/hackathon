@@ -35,6 +35,8 @@ import {
   ListChecks,
   ArrowRight,
   X,
+  DollarSign,
+  Phone,
 } from "lucide-react";
 
 // --- MOCK DATA FOR LOCAL STATE ---
@@ -51,6 +53,7 @@ const MOCK_INVENTORY = [
     donatorLocation: "Austin, TX",
     timestamp: Date.now() - 500000,
     price: 15,
+    imageURL: "https://placehold.co/400x200/4B5563/FFFFFF?text=Wireless+Mouse",
   },
   {
     id: 2,
@@ -64,6 +67,7 @@ const MOCK_INVENTORY = [
     donatorLocation: "Austin, TX",
     timestamp: Date.now() - 400000,
     price: 30,
+    imageURL: "https://placehold.co/400x200/DC2626/FFFFFF?text=Denim+Jeans",
   },
   {
     id: 3,
@@ -77,6 +81,7 @@ const MOCK_INVENTORY = [
     donatorLocation: "Dallas, TX",
     timestamp: Date.now() - 300000,
     price: 5,
+    imageURL: "https://placehold.co/400x200/059669/FFFFFF?text=Hardcover+Novel",
   },
   {
     id: 4,
@@ -90,6 +95,7 @@ const MOCK_INVENTORY = [
     donatorLocation: "Houston, TX",
     timestamp: Date.now() - 200000,
     price: 10,
+    imageURL: "https://placehold.co/400x200/F59E0B/FFFFFF?text=Trowel+Set",
   },
   {
     id: 5,
@@ -103,6 +109,7 @@ const MOCK_INVENTORY = [
     donatorLocation: "Austin, TX",
     timestamp: Date.now() - 100000,
     price: 20,
+    imageURL: "https://placehold.co/400x200/06B6D4/FFFFFF?text=Yoga+Mat",
   },
 ];
 
@@ -117,6 +124,7 @@ const MOCK_FOOD_ITEMS = [
     specificLocation: "Shelf 1A",
     timestamp: Date.now() - 90000,
     donatorName: "Farm Co.",
+    phone: "555-0001",
   },
   {
     id: "f2",
@@ -128,6 +136,7 @@ const MOCK_FOOD_ITEMS = [
     specificLocation: "Storage Bin 5",
     timestamp: Date.now() - 80000,
     donatorName: "Snack Inc.",
+    phone: "555-0002",
   },
   {
     id: "f3",
@@ -139,6 +148,7 @@ const MOCK_FOOD_ITEMS = [
     specificLocation: "Fridge Unit 3",
     timestamp: Date.now() - 70000,
     donatorName: "Local Farmer",
+    phone: "555-0003",
   },
 ];
 
@@ -182,7 +192,7 @@ const FOOD_STORAGE_OPTIONS = ["Pantry", "Refrigerated", "Frozen", "Cool/Dry"];
 // Mock API Constants
 const MOCK_IMAGGA_KEY = "acc_1611ccc4a20d56a";
 const FUZZY_THRESHOLD = -2500;
-const API_KEY = ""; // Placeholder for Gemini API Key
+const API_KEY = "AIzaSyAe7tKwBLy2MopVGm3N8SDOsRlrKQ7wSiU"; // Placeholder for Gemini API Key
 
 // ====================================================================
 // SECTION 1: UTILITY FUNCTIONS
@@ -307,13 +317,21 @@ const ItemCard = ({ item, onClick }) => (
     className="bg-white p-4 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 transform hover:scale-[1.02] hover:brightness-105 hover:bg-gray-50 border border-gray-100 cursor-pointer"
     onClick={() => onClick(item)}
   >
-    {/* Icon Slot - Replaces Image */}
+    {/* Icon Slot / Image Display (Updated to prioritize imageURL) */}
     <div
-      className={`w-full h-28 flex items-center justify-center rounded-md mb-3 border border-gray-100 ${getCategoryColor(
-        item.category
-      )}`}
+      className={`w-full h-28 flex items-center justify-center rounded-md mb-3 border border-gray-100 ${
+        !item.imageURL ? getCategoryColor(item.category) : "bg-gray-200"
+      } overflow-hidden`}
     >
-      {getCategoryIcon(item.category)}
+      {item.imageURL ? (
+        <img
+          src={item.imageURL}
+          alt={item.name}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        getCategoryIcon(item.category)
+      )}
     </div>
 
     <h3 className="text-base font-bold text-gray-800 mb-1 line-clamp-1">
@@ -624,12 +642,13 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Inventory"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Inventory</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Item Details
@@ -638,13 +657,21 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
 
       <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left: Image/Icon */}
+          {/* Left: Image/Icon (Updated to display imageURL) */}
           <div
-            className={`w-full md:w-1/3 h-56 flex items-center justify-center rounded-lg border border-gray-200 ${getCategoryColor(
-              item.category
-            )} shadow-lg flex-shrink-0`}
+            className={`w-full md:w-1/3 h-56 flex items-center justify-center rounded-lg border border-gray-200 ${
+              !item.imageURL ? getCategoryColor(item.category) : "bg-gray-200"
+            } shadow-lg flex-shrink-0 overflow-hidden`}
           >
-            {getCategoryIcon(item.category)}
+            {item.imageURL ? (
+              <img
+                src={item.imageURL}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              getCategoryIcon(item.category)
+            )}
           </div>
 
           {/* Right: Details */}
@@ -684,6 +711,12 @@ const ItemDetailPage = ({ item, setCurrentPage }) => {
                     <User size={16} className="mr-2 text-gray-500" />
                     <span className="font-bold w-24">Donator:</span>
                     <span>{item.donatorName || "N/A"}</span>
+                  </div>
+                  {/* Phone Number Display */}
+                  <div className="flex items-center text-gray-700">
+                    <Phone size={16} className="mr-2 text-gray-500" />
+                    <span className="font-bold w-24">Phone:</span>
+                    <span>{item.phone || "N/A"}</span>
                   </div>
                   <div className="flex items-start text-gray-700">
                     <MapPin
@@ -734,12 +767,13 @@ const FoodItemDetailPage = ({ item, setCurrentPage }) => {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Inventory"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Inventory</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Food Item Details
@@ -815,7 +849,149 @@ const FoodItemDetailPage = ({ item, setCurrentPage }) => {
   );
 };
 
-// --- New Component for NGO Review ---
+// --- New Component for Money Donation ---
+
+const MoneyDonationPage = ({ setCurrentPage }) => {
+  const [amount, setAmount] = useState(25);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setMessage("");
+
+    // Mock payment processing
+    console.log(`Processing mock payment of $${amount} from ${name}...`);
+    setMessage(
+      `Thank you, ${name}! Your donation of $${amount} has been successfully processed (Mock).`
+    );
+
+    setTimeout(() => {
+      setCurrentPage("home");
+      setMessage("");
+    }, 3000);
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-4 sm:p-6">
+      <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
+        <button
+          onClick={() => setCurrentPage("home")}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Home"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
+          Money Donation
+        </h1>
+      </header>
+
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
+        <div className="flex flex-col items-center mb-6">
+          <DollarSign size={48} className="text-green-600 mb-2" />
+          <h2 className="text-2xl font-bold text-gray-800">
+            Support Our Mission
+          </h2>
+          <p className="text-sm text-gray-600 text-center mt-1">
+            Your financial gift helps cover operational costs and critical
+            needs.
+          </p>
+        </div>
+
+        {message && (
+          <div
+            className="px-4 py-3 rounded relative mb-4 border bg-green-100 border-green-400 text-green-700"
+            role="alert"
+          >
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Amount Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Donation Amount
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {[10, 25, 50, 100, 250, "Other"].map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setAmount(val === "Other" ? "" : val)}
+                  className={`p-3 rounded-lg font-semibold transition duration-150 border-2 ${
+                    (val === amount && val !== "Other") ||
+                    (val === "Other" && typeof amount !== "number")
+                      ? "bg-green-600 text-white border-green-700 shadow-lg"
+                      : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                  }`}
+                >
+                  {val === "Other" ? "Other" : `$${val}`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Amount Input */}
+          {typeof amount !== "number" && (
+            <div>
+              <label
+                htmlFor="customAmount"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Custom Amount ($)
+              </label>
+              <input
+                type="number"
+                id="customAmount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                min="1"
+                placeholder="Enter amount"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition"
+              />
+            </div>
+          )}
+
+          {/* Name Input */}
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Your Name (Optional)
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Anonymous"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={!amount || amount <= 0}
+            className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white transition duration-150 ${
+              !amount || amount <= 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            }`}
+          >
+            <Heart size={20} className="mr-2" />
+            Donate ${amount} Now
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 /**
  * Review Donation Page Component
@@ -831,7 +1007,6 @@ const ReviewDonationPage = ({ item, setCurrentPage }) => {
 
   const handleConfirmAcceptance = () => {
     // Mock final acceptance logic
-    // NOTE: In a real app, this would update the item status in the database.
     alert(
       `NGO Confirmed Acceptance of: ${item.name} from ${item.donatorName}. (Action mocked)`
     );
@@ -898,12 +1073,13 @@ const ReviewDonationPage = ({ item, setCurrentPage }) => {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("ngoDonation")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Donation Hub"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Donation Hub</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Review Donation
@@ -937,6 +1113,7 @@ const ReviewDonationPage = ({ item, setCurrentPage }) => {
               value={item.donatorName || "N/A"}
               icon={User}
             />
+            <DetailRow label="Phone" value={item.phone || "N/A"} icon={Phone} />
             <DetailRow
               label="Location"
               value={item.donatorLocation || "N/A"}
@@ -1054,6 +1231,15 @@ const HomeView = ({
         </h1>
 
         <div className="flex items-center space-x-3">
+          {/* Money Donation Button */}
+          <button
+            onClick={() => setCurrentPage("donateMoney")}
+            className="flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 transform hover:scale-105"
+          >
+            <DollarSign size={20} className="mr-2" />
+            Donate Money
+          </button>
+
           {/* User Profile / Login Button */}
           {isLoggedIn ? (
             <>
@@ -1166,7 +1352,7 @@ const HomeView = ({
                 Available Food Items
               </h3>
               {/* Only show Add Food button if logged in as Individual (Donator) */}
-              {isLoggedIn && currentUser.userType === "individual" && (
+              {isLoggedIn && currentUser?.userType === "individual" && (
                 <button
                   onClick={handleAddFoodClick}
                   className="flex items-center text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded-full transition duration-150 shadow-md"
@@ -1291,19 +1477,20 @@ const SelectLoginPage = ({ setCurrentPage }) => {
   return (
     <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Home"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Home</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Login
         </h1>
       </header>
 
-      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 space-y-6">
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel">
         <p className="text-center text-lg font-semibold text-gray-700">
           How would you like to access the donation system?
         </p>
@@ -1337,6 +1524,7 @@ const DonatorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
   const userType = "individual";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(""); // NEW FIELD
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState("");
   const [isIdVerified, setIsIdVerified] = useState(false);
@@ -1344,7 +1532,7 @@ const DonatorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
   const [isPending, setIsPending] = useState(false);
 
   const handleVerify = async () => {
-    if (!name || !email || !address || !location) {
+    if (!name || !email || !address || !location || !phone) {
       setMessage("Please fill out all required fields.");
       return;
     }
@@ -1370,9 +1558,10 @@ const DonatorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
     const user = {
       name,
       email,
+      phone,
       address,
       location,
-      userType,
+      userType, // Added phone
       profilePicture:
         "https://placehold.co/100x100/4B5563/FFF?text=" +
         name
@@ -1391,12 +1580,13 @@ const DonatorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
   return (
     <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("selectLogin")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Login Select"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Login Select</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Individual Donator Login
@@ -1450,6 +1640,24 @@ const DonatorLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="name@example.com"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          {/* New Phone Field */}
+          <div>
+            <label
+              htmlFor="loginPhone"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="loginPhone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              placeholder="555-123-4567"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
             />
           </div>
@@ -1563,6 +1771,7 @@ const NgoLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
   const userType = "ngo";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(""); // NEW FIELD
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState("");
   const [registrationId, setRegistrationId] = useState(""); // NGO specific field
@@ -1571,7 +1780,7 @@ const NgoLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
   const [isPending, setIsPending] = useState(false);
 
   const handleVerify = async () => {
-    if (!name || !email || !address || !location || !registrationId) {
+    if (!name || !email || !phone || !address || !location || !registrationId) {
       setMessage("Please fill out all required fields.");
       return;
     }
@@ -1597,10 +1806,11 @@ const NgoLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
     const user = {
       name,
       email,
+      phone,
       address,
       location,
       userType,
-      registrationId,
+      registrationId, // Added phone
       profilePicture:
         "https://placehold.co/100x100/4B5563/FFF?text=" +
         name
@@ -1619,12 +1829,13 @@ const NgoLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
   return (
     <div className="max-w-md mx-auto p-4 sm:p-6 content-panel">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("selectLogin")} // Back to selection page
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Login Select"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Login Select</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           NGO Login
@@ -1695,6 +1906,24 @@ const NgoLoginPage = ({ setCurrentPage, setLoggedIn, setCurrentUser }) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="contact@ngo.org"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
+            />
+          </div>
+          {/* New Phone Field */}
+          <div>
+            <label
+              htmlFor="loginPhone"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="loginPhone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              placeholder="555-123-4567"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-gray-500 focus:border-gray-500 transition"
             />
           </div>
@@ -1826,7 +2055,7 @@ const DonatorProfilePage = ({
     currentUser.name
       ?.split(" ")
       .map((n) => n[0])
-      ?.join("")
+      .join("")
       ?.toUpperCase() || "AN"; // Safely handle null/undefined name
   const profilePicUrl = `https://placehold.co/150x150/4B5563/FFFFFF?text=${initials}`;
 
@@ -1839,19 +2068,20 @@ const DonatorProfilePage = ({
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center border-b border-gray-200">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Home"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Home</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           My Profile
         </h1>
       </header>
 
-      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 space-y-8">
+      <div className="p-8 bg-white/90 rounded-xl shadow-2xl border-t-4 border-gray-500 content-panel space-y-8">
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center border-b border-gray-200 pb-6">
           <img
@@ -1898,6 +2128,13 @@ const DonatorProfilePage = ({
               <span className="font-semibold block">Email:</span>
               <span className="text-gray-600">
                 {currentUser.email || "N/A"}
+              </span>
+            </div>
+            {/* Phone Number Display */}
+            <div className="text-gray-700">
+              <span className="font-semibold block">Phone:</span>
+              <span className="text-gray-600">
+                {currentUser.phone || "N/A"}
               </span>
             </div>
             <div className="text-gray-700">
@@ -2006,12 +2243,13 @@ const NgoDonationView = ({
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Home"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Home</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           NGO Donation Hub
@@ -2145,6 +2383,7 @@ const AddItemPage = ({
     donatorName: currentUser?.name || "",
     donatorAddress: currentUser?.address || "",
     donatorLocation: currentUser?.location || "",
+    phone: currentUser?.phone || "", // NEW FIELD
   };
 
   const [newItem, setNewItem] = useState({
@@ -2154,6 +2393,7 @@ const AddItemPage = ({
     description: "",
     details: "",
     picture: null,
+    imageURL: "", // NEW FIELD for permanent image link
     ...initialDonatorDetails,
   });
 
@@ -2199,6 +2439,11 @@ const AddItemPage = ({
         "Verification failed. Image quality is too low or content is inappropriate."
       );
     } else {
+      // Mock image URL generation based on category (to simulate upload)
+      const mockImageURL = `https://placehold.co/400x200/${getCategoryColor(
+        newItem.category
+      ).replace("bg-", "")}/FFFFFF?text=${newItem.name.replace(/ /g, "+")}`;
+      setNewItem((prev) => ({ ...prev, imageURL: mockImageURL }));
       setVerificationStatus("success");
       setMessage("Image successfully verified and approved.");
     }
@@ -2212,9 +2457,11 @@ const AddItemPage = ({
       condition: newItem.condition,
       description: newItem.description || "No description provided.",
       details: newItem.details || "No additional details provided.",
-      donatorName: newItem.donatorName, // UPDATED
-      donatorAddress: newItem.donatorAddress, // UPDATED
-      donatorLocation: newItem.donatorLocation, // UPDATED
+      donatorName: newItem.donatorName,
+      donatorAddress: newItem.donatorAddress,
+      donatorLocation: newItem.donatorLocation,
+      phone: newItem.phone, // ADDED PHONE
+      imageURL: newItem.imageURL, // ADDED IMAGE URL
       timestamp: Date.now(),
     };
 
@@ -2380,12 +2627,13 @@ const AddItemPage = ({
       {/* --- END DUPLICATE ALERT MODAL --- */}
 
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Home"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Home</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Submit Donation (Donator)
@@ -2437,6 +2685,56 @@ const AddItemPage = ({
                 }`}
               />
             </div>
+            {/* Donator Phone */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                id="phone"
+                value={newItem.phone}
+                onChange={handleChange}
+                required
+                placeholder="555-123-4567"
+                readOnly={currentUser}
+                className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                  currentUser
+                    ? "bg-gray-100 border-gray-300"
+                    : "border-gray-300"
+                }`}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Donator Address */}
+            <div>
+              <label
+                htmlFor="donatorAddress"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Street Address
+              </label>
+              <input
+                type="text"
+                name="donatorAddress"
+                id="donatorAddress"
+                value={newItem.donatorAddress}
+                onChange={handleChange}
+                required
+                placeholder="Street address, Apt, etc."
+                readOnly={currentUser}
+                className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                  currentUser
+                    ? "bg-gray-100 border-gray-300"
+                    : "border-gray-300"
+                }`}
+              />
+            </div>
             {/* Donator Location (City/State) */}
             <div>
               <label
@@ -2461,28 +2759,6 @@ const AddItemPage = ({
                 }`}
               />
             </div>
-          </div>
-          {/* Donator Address */}
-          <div>
-            <label
-              htmlFor="donatorAddress"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Street Address
-            </label>
-            <input
-              type="text"
-              name="donatorAddress"
-              id="donatorAddress"
-              value={newItem.donatorAddress}
-              onChange={handleChange}
-              required
-              placeholder="Street address, Apt, etc."
-              readOnly={currentUser}
-              className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
-                currentUser ? "bg-gray-100 border-gray-300" : "border-gray-300"
-              }`}
-            />
           </div>
           {/* --- End Donator Details Section --- */}
 
@@ -2624,20 +2900,30 @@ const AddItemPage = ({
               {/* End Verification Button */}
 
               <div className="space-y-1 text-center relative z-0">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m30-10V12a4 4 0 00-4-4H20L4 32h16l4 8 16-24z"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                {/* Display preview if imageURL is mocked/available */}
+                {newItem.imageURL && isSuccess ? (
+                  <img
+                    src={newItem.imageURL}
+                    alt="Item Preview"
+                    className="mx-auto h-12 w-auto object-contain rounded-md"
                   />
-                </svg>
+                ) : (
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m30-10V12a4 4 0 00-4-4H20L4 32h16l4 8 16-24z"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+
                 <div className="flex text-sm text-gray-600">
                   <label
                     htmlFor="file-upload"
@@ -2695,6 +2981,7 @@ const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
     donatorName: currentUser?.name || "",
     donatorAddress: currentUser?.address || "",
     donatorLocation: currentUser?.location || "",
+    phone: currentUser?.phone || "", // NEW FIELD
   };
 
   const [newFoodItem, setNewFoodItem] = useState({
@@ -2727,9 +3014,10 @@ const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
       storageLocation: newFoodItem.storageLocation,
       specificLocation: newFoodItem.specificLocation,
       details: newFoodItem.details || "No details provided.",
-      donatorName: newFoodItem.donatorName, // UPDATED
-      donatorAddress: newFoodItem.donatorAddress, // UPDATED
-      donatorLocation: newFoodItem.donatorLocation, // UPDATED
+      donatorName: newFoodItem.donatorName,
+      donatorAddress: newFoodItem.donatorAddress,
+      donatorLocation: newFoodItem.donatorLocation,
+      phone: newFoodItem.phone, // ADDED PHONE
       timestamp: Date.now(),
       available: parseInt(newFoodItem.quantity, 10), // Mock available count
     };
@@ -2751,12 +3039,13 @@ const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <header className="mb-6 p-3 bg-white/90 rounded-xl shadow-lg flex justify-between items-center content-panel">
+        {/* Back Button Icon Only */}
         <button
           onClick={() => setCurrentPage("home")}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150"
+          className="flex items-center text-gray-600 hover:text-gray-800 transition duration-150 p-2 rounded-full hover:bg-gray-100"
+          title="Back to Home"
         >
-          <ChevronLeft size={24} className="mr-2" />
-          <span className="font-semibold text-lg">Back to Home</span>
+          <ChevronLeft size={24} />
         </button>
         <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight font-sans uppercase">
           Donate Food Item (Donator)
@@ -2779,6 +3068,7 @@ const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
             Donator Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Donator Name */}
             <div>
               <label
                 htmlFor="donatorName"
@@ -2802,6 +3092,57 @@ const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
                 }`}
               />
             </div>
+            {/* Donator Phone */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                id="phone"
+                value={newFoodItem.phone}
+                onChange={handleChange}
+                required
+                placeholder="555-123-4567"
+                readOnly={currentUser}
+                className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                  currentUser
+                    ? "bg-gray-100 border-gray-300"
+                    : "border-gray-300"
+                }`}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Donator Address */}
+            <div>
+              <label
+                htmlFor="donatorAddress"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Street Address
+              </label>
+              <input
+                type="text"
+                name="donatorAddress"
+                id="donatorAddress"
+                value={newFoodItem.donatorAddress}
+                onChange={handleChange}
+                required
+                placeholder="Street address, Apt, etc."
+                readOnly={currentUser}
+                className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
+                  currentUser
+                    ? "bg-gray-100 border-gray-300"
+                    : "border-gray-300"
+                }`}
+              />
+            </div>
+            {/* Donator Location */}
             <div>
               <label
                 htmlFor="donatorLocation"
@@ -2825,27 +3166,6 @@ const AddFoodItemPage = ({ setCurrentPage, handleAddItem, currentUser }) => {
                 }`}
               />
             </div>
-          </div>
-          <div>
-            <label
-              htmlFor="donatorAddress"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Street Address
-            </label>
-            <input
-              type="text"
-              name="donatorAddress"
-              id="donatorAddress"
-              value={newFoodItem.donatorAddress}
-              onChange={handleChange}
-              required
-              placeholder="Street address, Apt, etc."
-              readOnly={currentUser}
-              className={`w-full p-3 border rounded-lg focus:ring-gray-500 focus:border-gray-500 transition duration-150 ${
-                currentUser ? "bg-gray-100 border-gray-300" : "border-gray-300"
-              }`}
-            />
           </div>
 
           {/* Food Details Section */}
@@ -3263,6 +3583,9 @@ const App = () => {
     content = (
       <ReviewDonationPage item={selectedItem} setCurrentPage={setCurrentPage} />
     );
+  } else if (currentPage === "donateMoney") {
+    // NEW ROUTE
+    content = <MoneyDonationPage setCurrentPage={setCurrentPage} />;
   } else if (currentPage === "add") {
     // General Item Add (Donator only)
     // Check for 'individual' userType before rendering item form
